@@ -3,7 +3,7 @@ import os,ConfigParser
 import random
 import math
 
-from twisted.internet import reactor
+from twisted.internet import reactor, task
 
 from player import Player,load_players
 from zone import Zone,load_zones
@@ -73,7 +73,9 @@ class Game:
     # Spells table
     self.spells = {}
 
-    
+    # loop task
+    self.loop_task = task.LoopingCall(self.loop)
+    self.loop_task.start(0.1)
 
   def process_data(self, player_name, data, protocol=None):
     
@@ -850,9 +852,9 @@ class Game:
     
     # Follow event queue
     for e in self.events[self.last_event:]:
-      if e['type'] in ['playermove','npcmove','monstermove']:
-        continue
-      #print "EVENT %s: %s" % (e['type'], e)
+      #if e['type'] in ['playermove','npcmove','monstermove']:
+      #  continue
+      print "EVENT %s: %s" % (e['type'], e)
 
     self.last_event = len(self.events)
 

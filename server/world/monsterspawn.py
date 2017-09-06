@@ -25,6 +25,8 @@ class MonsterSpawn:
     # Schedule update task
     self.spawn_task = task.LoopingCall(self.spawn)
     self.spawn_task.start(self.spawn_delay, now=False)
+    
+    print "Loaded MONSTER SPAWN",self.name
  
   def spawn(self):
 

@@ -37,7 +37,7 @@ def load_players(world, x, y, zone):
       spells = spells.split(',')
     
     world.players[name] = Player(name, title, level, exp, gender, body, hairstyle, haircolor, password, x, y, zone, spells, hp, mp, hit, dam, arm, world)  
-    print items
+    
     # Load player items
     for iname in items:
       Item(iname, player=name, container=None, equipped=False, world=world)
@@ -90,7 +90,7 @@ class Player:
    
     self.quests = {}
     
-    print "Loaded PLAYER",self.state()
+    print "Loaded PLAYER",self.name
 
   def unload(self):
     self.update_task.stop()
