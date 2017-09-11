@@ -1,5 +1,7 @@
 from twisted.internet import reactor, protocol, endpoints, task
 from twisted.protocols import basic
+from twisted.python import log
+
 import json
 
 PLAYER_ACTION_TIME = 1.0 # seconds it takes to perform an action
@@ -14,11 +16,11 @@ class GameProtocol(basic.LineReceiver):
       self.last_event = len(self.factory.world.events)
 
     def connectionMade(self):
-      print "Connection made"
+      log.msg( "Connection made" )
       self.factory.clients.add(self)
 
     def connectionLost(self, reason):
-      print "Connection lost"
+      log.msg( "Connection lost" )
       if self.player_name: 
         self.factory.world.player_leave(self.player_name)
       

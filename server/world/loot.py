@@ -1,6 +1,7 @@
 from item import Item
 import ConfigParser
 import copy
+from twisted.python import log
 
 def load_loot(world):
 
@@ -36,4 +37,4 @@ class Loot:
     self.items_uncommon = items_uncommon
     self.items_rare = items_rare
 
-    print "Loaded LOOT",name
+    log.msg( "Loaded LOOT %s" % name )

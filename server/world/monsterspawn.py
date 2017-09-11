@@ -4,6 +4,7 @@ import copy
 import ConfigParser
 from monster import Monster
 from twisted.internet import task
+from twisted.python import log
 import ConfigParser
 
 class MonsterSpawn:
@@ -26,7 +27,7 @@ class MonsterSpawn:
     self.spawn_task = task.LoopingCall(self.spawn)
     self.spawn_task.start(self.spawn_delay, now=False)
     
-    print "Loaded MONSTER SPAWN",self.name
+    log.msg( "Loaded MONSTER SPAWN %s" % self.name )
  
   def spawn(self):
 

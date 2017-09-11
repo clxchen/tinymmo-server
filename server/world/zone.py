@@ -6,6 +6,7 @@ from npcspawn import NpcSpawn
 from warp import Warp
 import ConfigParser
 import os
+from twisted.python import log
 
 def load_zones(world):
 
@@ -87,7 +88,7 @@ class Zone:
         
         self.world.warps.append(Warp(self.name, x, y, end_zone, end_x, end_y))
 
-    print "Loaded ZONE",self.name
+    log.msg( "Loaded ZONE %s" % self.name )
      
   def heuristic(self, a,b):
     (x1,y1) = a

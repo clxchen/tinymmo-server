@@ -1,4 +1,5 @@
 import ConfigParser
+from twisted.python import log
 
 def load_quests(world):
 
@@ -39,7 +40,7 @@ class Quest:
     self.kill_target = kill_target
     self.kill_count  = kill_count
 
-    print "Loaded QUEST %s" % self.name
+    log.msg( "Loaded QUEST %s" % self.name )
 
   def assign(self, player_name):
 

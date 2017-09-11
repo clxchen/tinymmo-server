@@ -3,6 +3,7 @@ import random
 import ConfigParser
 from item import Item
 from twisted.internet import task, reactor
+from twisted.python import log
 
 
 def load_players(world, x, y, zone):
@@ -90,7 +91,7 @@ class Player:
    
     self.quests = {}
     
-    print "Loaded PLAYER",self.name
+    log.msg( "Loaded PLAYER %s" % self.name )
 
   def unload(self):
     self.update_task.stop()

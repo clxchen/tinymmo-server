@@ -4,6 +4,7 @@ import random
 import math
 
 from twisted.internet import reactor, task
+from twisted.python import log
 
 from player import Player,load_players
 from zone import Zone,load_zones
@@ -854,7 +855,7 @@ class Game:
     for e in self.events[self.last_event:]:
       #if e['type'] in ['playermove','npcmove','monstermove']:
       #  continue
-      print "EVENT %s: %s" % (e['type'], e)
+      log.msg( "EVENT %s: %s" % (e['type'], e) )
 
     self.last_event = len(self.events)
 
