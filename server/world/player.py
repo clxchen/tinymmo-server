@@ -45,10 +45,9 @@ def load_players(world, x, y, zone):
 
 class Player:
 
-  levels = [ 0, 100, 200, 400, 800, 1600, 3200, 6400, 12800 ]
-
-
-  def __init__(self, name, title, level, exp, gender, body, hairstyle, haircolor, password, x, y, zone, spells, hp, mp, hit, dam, arm, world):
+  levels = [ 100, 200, 400, 800, 1600, 3200, 6400, 12800 ]
+  
+  def __init__(self, name, title, level, exp, gender, body, hairstyle, haircolor, password, x, y, zone, items, spells, quests, hp, mp, hit, dam, arm, world):
 
     self.title = title
     self.name = name
@@ -62,6 +61,7 @@ class Player:
     self.target = None
     self.fighting = False
     self.spells = spells # list of spells known by this player
+    self.quests = quests
     self.running = False
     self.hp = [ hp, hp ]
     self.mp = [ mp, mp ]
@@ -81,6 +81,10 @@ class Player:
     # Schedule update task
     self.update_task = task.LoopingCall(self.update)
     self.update_task.start(1.0)
+   
+    # Schedule regen task
+    self.regen_task = task.LoopingCall(self.regen)
+    self.regen_task.start(5.0)
     
     # Schedule pathfollow task
     self.pathfollow_task = task.LoopingCall(self.pathfollow)
@@ -88,10 +92,16 @@ class Player:
   
     self.ready_to_attack = True
    
-   
     self.quests = {}
+   
+    self.world.players[self.name] = self
     
-    log.msg( "Loaded PLAYER %s" % self.name )
+    log.msg( "Created PLAYER %s" % self.name )
+    
+    # Load player items
+    for iname in items:
+      Item(iname, player=name, container=None, equipped=False, world=world)
+
 
   def unload(self):
     self.update_task.stop()
@@ -135,7 +145,7 @@ class Player:
     if self.hp[0] < 0:
       self.hp[0] = 0
 
-    self.world.events.append(self.world.player_stats(self.name))
+    self.world.events.append({'type': 'playerdamage', 'name': self.name, 'zone': self.zone, 'hp': self.hp, 'damage': damage })
 
   def warp(self, zone, x, y):
     # Drop player
@@ -167,12 +177,12 @@ class Player:
       elif dest[0] < self.x:
         self.direction = 'west'
       
-      if dest[1] > self.y:
+      if dest[1] < self.y:
         self.direction = 'north'
-      elif dest[1] < self.y:
+      elif dest[1] > self.y:
         self.direction = 'south'  
       
-      #self.world.events.append({ 'type': 'playermove', 'name': self.name, 'zone': self.zone, 'direction': self.direction, 'start': (self.x,self.y), 'end': dest })
+      self.world.events.append({ 'type': 'playermove', 'name': self.name, 'zone': self.zone, 'direction': self.direction, 'start': (self.x,self.y), 'end': dest })
       self.x = dest[0]
       self.y = dest[1]
       
@@ -180,8 +190,9 @@ class Player:
       if not self.path:
         self.mode = 'wait'
 
-  def update(self):
-    
+
+  def regen(self):
+
     if not self.online:
       return
 
@@ -197,7 +208,23 @@ class Player:
       self.dam = int(self.level * 1.5)
       self.hit = int(self.level * 1.5)
 
+    if self.mode == 'wait':
+      # heal 5% per second while waiting
+      if self.hp[0] < self.hp[1]:
+        heal = self.hp[1]/20 + 1
+        self.hp[0] += heal
+        if self.hp[0] > self.hp[1]:
+          self.hp[0] = self.hp[1]
+        self.world.events.append({'type': 'playerheal', 'name': self.name, 'hp': self.hp, 'zone': self.zone, 'heal': heal})
+      
+      if self.mp[0] < self.mp[1]:
+        self.mp[0] += self.mp[1]/20 + 1
+        if self.mp[0] > self.mp[1]:
+          self.mp[0] = self.mp[1]
 
+
+  def update(self):
+    
 
     if self.hp[0] < 1:
       if self.mode != 'dead':
@@ -257,20 +284,7 @@ class Player:
             self.path = []
             self.warp(end_zone.name, end_x, end_y)
 
-    if self.mode == 'wait':
-      # heal 5% per second while waiting
-      if self.hp[0] < self.hp[1]:
-        self.hp[0] += self.hp[1]/20 + 1
-      if self.mp[0] < self.mp[1]:
-        self.mp[0] += self.mp[1]/20 + 1
-
-      # but dont go over!
-      if self.hp[0] > self.hp[1]:
-        self.hp[0] = self.hp[1]
-      if self.mp[0] > self.mp[1]:
-        self.mp[0] = self.mp[1]
-
-    elif self.mode == 'fighting':
+    if self.mode == 'fighting':
       
       if self.target is None:
         self.mode = 'wait'

@@ -42,6 +42,10 @@ class Monster:
     self.update_task = task.LoopingCall(self.update)
     self.update_task.start(1.0)
 
+    # Schedule regen task
+    self.regen_task = task.LoopingCall(self.regen)
+    self.regen_task.start(5.0)
+    
     self.world.monsters[self.name] = self
     
     self.world.events.append({ 'type':   'addmonster', 
@@ -68,6 +72,22 @@ class Monster:
       self.mode = 'fighting'
     
     self.hp[0] -= damage
+    
+    self.world.events.append({'type': 'monsterdamage', 'name': self.name, 'zone': self.zone, 'hp': self.hp, 'damage': damage })
+
+  def regen(self):
+    
+    if self.mode == 'wait':
+      # heal 5% per second while waiting
+      if self.hp[0] < self.hp[1]:
+        heal = self.hp[1]/20 + 1
+        self.hp[0] += heal
+        if self.hp[0] > self.hp[1]:
+          self.hp[0] = self.hp[1]
+        self.world.events.append({'type': 'monsterheal', 'name': self.name, 'hp': self.hp, 'zone': self.zone, 'heal': heal })
+
+      if self.hp[0] == self.hp[1]:
+        self.mode = 'wander'
 
   def update(self):
     
@@ -77,17 +97,6 @@ class Monster:
         self.mode = 'dead'
         self.world.events.append({ 'type': 'monsterdie', 'name': self.name, 'title': self.title, 'zone': self.zone })
         reactor.callLater(2.0, self.world.cleanup_monster, self)
-
-    if self.mode == 'wait':
-      # heal 10% per second while waiting
-      if self.hp[0] < self.hp[1]:
-        self.hp[0] += self.hp[1]/10
-      # but dont go over!
-      if self.hp[0] > self.hp[1]:
-        self.hp[0] = self.hp[1]
-
-      if self.hp[0] == self.hp[1]:
-        self.mode = 'wander'
 
     elif self.mode == 'wander':
       if random.random() > 0.10:
@@ -202,7 +211,7 @@ class Monster:
     self.ready_to_attack = False
     
     tohit  = random.randint(1,20) + self.hit
-    damage = random.randint(1, self.dam)
+    damage = random.randint(1, self.dam + 1)
 
     player_arm = self.world.get_player_arm(self.target.name)
 

@@ -39,11 +39,13 @@ class Game:
     # Player spawn location
     self.player_spawn_x = 7
     self.player_spawn_y = 7
-    self.player_spawn_zone = 'start'
+    self.player_spawn_zone = 'start2'
 
     # Players table
     self.players = {}
-    load_players(self, self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone)
+    self.player_index = 0
+
+    #load_players(self, self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone)
 
     # Monsters table
     self.monsters = {}
@@ -81,15 +83,17 @@ class Game:
   def process_data(self, player_name, data, protocol=None):
     
     send_now = None
-
     if data['action'] == 'activate':
       send_now = self.player_activate(player_name)
-    
+   
+    elif data['action'] == 'attack':
+      send_now = self.player_attack(player_name)
+       
     elif data['action'] == 'equip':
-      self.player_equip(player_name, data['name'])
+      self.player_equip(player_name, data['item'])
 
     elif data['action'] == 'unequip':
-      self.player_unequip(player_name, data['name'])
+      self.player_unequip(player_name, data['item'])
    
     elif data['action'] == 'buy':
       send_now = self.player_buy(player_name, data['item'])
@@ -110,7 +114,7 @@ class Game:
       send_now = self.player_accept_quest(player_name, data['name'])
        
     elif data['action'] == 'settarget':
-      send_now = self.set_player_target(player_name, data['x'], data['y'])
+      send_now = self.set_player_target(player_name, data['target_type'], data['target_name'])
     
     elif data['action'] == 'goto': 
       self.player_goto(player_name, data['x'], data['y'])
@@ -135,7 +139,24 @@ class Game:
 
     elif data['action'] == 'refresh':
       send_now = self.refresh(player_name)
-    
+   
+    elif data['action'] == 'getmonster':
+      monster = self.monsters[data['name']].state()
+      monster['type'] = 'addmonster'
+      send_now = {'type': 'events', 'events': [ monster ] }
+       
+    elif data['action'] == 'getplayer':
+      player = self.players[data['name']].state()
+      player['type'] = 'addplayer'
+      send_now = {'type': 'events', 'events': [ player ] }
+       
+    elif data['action'] == 'getnpc':
+      npc = self.npcs[data['name']].state()
+      npc['type'] = 'addnpc'
+      send_now = {'type': 'events', 'events': [ npc ] }
+    else:
+      print data
+       
     return send_now
 
   def player_stats(self, player_name):
@@ -144,7 +165,7 @@ class Game:
     
     stats = { "title": player.title, "hit": self.get_player_hit(player_name), "dam": self.get_player_dam(player_name), "arm": self.get_player_arm(player_name), "hp": player.hp, "mp": player.mp, "gold": player.gold, "exp": player.exp, "level": player.level }
   
-    return { "type": "playerstats", "stats": stats, "zone": "player_%s" % player_name }
+    return { "type": "playerstats", "stats": stats }
 
   def player_goto(self, player_name, x, y):
     player = self.players[player_name]
@@ -153,16 +174,20 @@ class Game:
     end = x,y 
     player.path = zone.get_path(start,end)
     
-    self.events.append({"type": "playerpath", "name": player_name, "path": player.path, "zone": player.zone})
+    #self.events.append({"type": "playerpath", "name": player_name, "path": player.path, "zone": player.zone})
 
   def refresh(self, player_name):
 
     zone_name = self.players[player_name].zone
     zone_source = self.zones[zone_name].source
 
-    zone_data = self.zones[zone_name].client_data
+    #zone_data = self.zones[zone_name].client_data
+    player_inventory = self.player_inventory(player_name)
+    player_stats = self.player_stats(player_name)
+    player_quests = self.player_questlog(player_name)
 
-    send_now = { 'type': 'refresh', 'player_name': player_name, 'zone_data': zone_data, 'zone': zone_name, 'zone_source': zone_source, 'players': {}, 'monsters': {}, 'npcs': {}, 'containers': {} }
+    send_now = { 'type': 'refresh', 'player_name': player_name, 'zone_source': zone_source, 'zone': zone_name, 'players': {}, 'monsters': {}, 'npcs': {}, 'containers': {}, 'player_inventory': player_inventory, 'player_stats': player_stats, 'player_quests': player_quests }
+    #send_now = { 'type': 'refresh', 'player_name': player_name, 'zone_data': zone_data, 'zone': zone_name, 'zone_source': zone_source, 'players': {}, 'monsters': {}, 'npcs': {}, 'containers': {} }
     
     # Add players to send_now dataset
     for k,v in self.players.items():
@@ -183,7 +208,7 @@ class Game:
     for k,v in self.containers.items():
       if v.zone == zone_name:
         send_now['containers'][k] = v.state()
-    
+  
     return send_now
 
 
@@ -193,6 +218,23 @@ class Game:
     event_list = [ e for e in self.events[upto:] if e['zone'] in [ 'all', self.players[player_name].zone, "player_%s" % player_name ] ]
 
     return { "type": "events", "events": event_list }
+
+  def create_player(self, title, gender, hairstyle, haircolor):
+    
+    items  = [ 'sword', 'chain_armor', 'chain_hood', 'bow', 'wand', 'spear' ]
+    spells = [ ]
+    quests = [ ]
+    dam    = 1
+    arm    = 1
+    hit    = 1
+    hp     = 10
+    mp     = 10
+    gold   = 0
+    name   = "player-%s" % self.player_index
+    self.player_index += 1
+    new_player = Player(name, title, 0, 0, gender, 'light', hairstyle, haircolor, 'xxxx', self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone, items, spells, quests, hp, mp, hit, dam, arm, self)
+    new_player.online = True
+    return new_player.name
 
   def player_join(self, player_name):
     
@@ -224,33 +266,33 @@ class Game:
     x = monster.x
     y = monster.y
     zone = monster.zone
-    source = 'data/LPC Base Assets/tiles/chests.png' #TODO: gravestone? corpse?
 
     # award random amount of gold 
-    monster.target.gold += random.randint(self.loot[monster.loot].gold_min, self.loot[monster.loot].gold_max)
+    #monster.target.gold += random.randint(self.loot[monster.loot].gold_min, self.loot[monster.loot].gold_max)
     
     create_container = False
     # 50% chance of common 
     for i in self.loot[monster.loot].items_common:
-      if random.random() < 0.5:
+      if random.random() < 1.0:
         create_container = True
         item = Item(i, None, container_name, False, self)
    
     # 10% chance of uncommon
     for i in self.loot[monster.loot].items_uncommon:
-      if random.random() < 0.1:
+      if random.random() < 1.0:
         create_container = True
         item = Item(i, None, container_name, False, self)
     
     # 5% chance of rare
     for i in self.loot[monster.loot].items_rare:
-      if random.random() < 0.05:
+      if random.random() < 1.0:
         create_container = True
         item = Item(i, None, container_name, False, self)
-
+    
     if create_container:
-      self.containers[container_name] = Container(title, container_name, x, y, zone, monster.target.name, source, 32, 32, 0, 0)
-      self.events.append({'type': 'addcontainer', 'name': container_name, 'title': title, 'x': x, 'y': y, 'zone': zone, 'source': source, 'source_w': 32, 'source_h': 32, 'source_x': 0, 'source_y': 0})
+      print "Create container!"
+      self.containers[container_name] = Container(title, container_name, x, y, zone, monster.target.name)
+      self.events.append({'type': 'addcontainer', 'name': container_name, 'title': title, 'x': x, 'y': y, 'zone': zone })
     
       # clean up container after 60 sec
       reactor.callLater(60.0, self.cleanup_container, container_name)
@@ -360,7 +402,47 @@ class Game:
     self.npcs[name].spawn.spawn_count -= 1
     del self.npcs[name]
 
-  def set_player_target(self, player_name, x, y):
+  def set_player_target(self, player_name, target_type, target_name):
+    
+    tgt = None
+    tgt_info = { 'type': 'targetinfo', 'tgt_type': 'none' }
+    if target_type == 'npc':
+      if self.npcs.has_key(target_name):
+        tgt = self.npcs[target_name]
+        tgt_info['tgt_type'] = 'npc'
+        
+        if tgt.quest:
+          tgt_info['quest'] = tgt.quest
+          # Get quest dialog
+        
+        if tgt.shop:
+          tgt_info['shop'] = tgt.shop
+          # Get shop inventory
+          
+    elif target_type == 'player':
+      if self.players.has_key(target_name):
+        tgt = self.players[target_name]
+        tgt_info['tgt_type'] = 'player'
+    
+    elif target_type == 'monster':
+      if self.monsters.has_key(target_name):
+        tgt = self.monsters[target_name]
+        tgt_info['tgt_type'] = 'monster'
+    
+    elif target_type == 'container':
+      if self.containers.has_key(target_name):
+        tgt = self.containers[target_name]
+        tgt_info['tgt_type'] = 'container'
+        # Get container inventory
+
+    if tgt:
+      self.players[player_name].target = tgt
+    else:
+      self.players[player_name].target = None
+
+    return tgt_info
+
+  def set_player_target2(self, player_name, x, y):
     
     zone = self.players[player_name].zone
     piz = [ p for p in self.players.values() if p.zone == zone and p.name != player_name and p.online ]
@@ -400,6 +482,11 @@ class Game:
     self.players[player_name].online = False
     self.players[player_name].target = None
     self.players[player_name].mode = 'wait'
+
+    # Delete all items owned by player
+    self.items = { k: v for k,v in self.items.items() if v.player != player_name }
+    
+    del(self.players[player_name])
     
   def walk(self, player_name, direction):
     '''
@@ -465,15 +552,18 @@ class Game:
     self.events.append({ 'type': 'playerchat', 'name': player_name, 'zone':  zone, 'message': message })
 
   def player_attack(self, player_name):
-    
     player = self.players[player_name]
      
     if player.target:
-      if self.in_attack_range(player,target):
-        player.mode = 'fighting'
-      else:
-        return { 'type': 'message', 'message': "You are not in range to attack %s" % target.title }
-
+      if player.target.__class__.__name__ == 'Npc':
+        if player.target.villan:
+          if self.in_attack_range(player,player.target):
+            player.mode = 'fighting'
+      elif player.target.__class__.__name__ == 'Monster':
+        if self.in_attack_range(player,player.target):
+          player.mode = 'fighting'
+ 
+  
   def player_activate(self, player_name):
 
     target = self.players[player_name].target
@@ -484,13 +574,13 @@ class Game:
     if target == None:
       send_now = { 'type': 'message', 'message': "What to whom?" }
 
-    # if target is monster, then fight it
-    elif target.__class__.__name__ == 'Monster':
-      if self.in_attack_range(player, target):
-        player.mode = 'fighting'
-        send_now = { 'type': 'message', 'message': "You attack the %s" % target.title }
-      else:
-        send_now = { 'type': 'message', 'message': "You are not in range to attack %s" % target.title }
+#    # if target is monster, then fight it
+#    elif target.__class__.__name__ == 'Monster':
+#      if self.in_attack_range(player, target):
+#        player.mode = 'fighting'
+#        send_now = { 'type': 'message', 'message': "You attack the %s" % target.title }
+#      else:
+#        send_now = { 'type': 'message', 'message': "You are not in range to attack %s" % target.title }
 
     # if npc has shop or quest info, they are friendly. no attacking
     elif target.__class__.__name__ == 'Npc':
@@ -505,12 +595,12 @@ class Game:
           if quest.avaliable_to(player_name):
             send_now = { 'type': 'questdialog', 'name': quest.name, 'title': quest.title, 'dialog': quest.dialog }
       
-      elif target.villan:
-        if self.in_attack_range(player, target):
-          player.mode = 'fighting'
-          send_now = { 'type': 'message', 'message': "You attack the %s" % target.title }
-        else:
-          send_now = { 'type': 'message', 'message': "You are not in range to attack %s" % target.title }
+#      elif target.villan:
+#        if self.in_attack_range(player, target):
+#          player.mode = 'fighting'
+#          send_now = { 'type': 'message', 'message': "You attack the %s" % target.title }
+#        else:
+#          send_now = { 'type': 'message', 'message': "You are not in range to attack %s" % target.title }
    
     elif target.__class__.__name__ == 'Container':
       inv = {}
@@ -643,7 +733,7 @@ class Game:
     
     
   def player_equip(self, player_name, item_name):
-   
+    
     # Skip if this item doesn't exist
     if not self.items.has_key(item_name):
       return
@@ -676,7 +766,7 @@ class Game:
     elif slot == 'head':
       self.events.append({ 'type': 'setplayerhead', 'name': player_name, 'zone':  zone, 'head': gear_type,})
 
-    self.events.append(self.player_stats(player_name))
+    #self.events.append(self.player_stats(player_name))
     
   def player_unequip(self, player_name, item_name):
 
@@ -708,7 +798,7 @@ class Game:
     elif slot == 'head':
       self.events.append({ 'type': 'setplayerhead', 'name': player_name, 'zone':  zone, 'head': 'none',})
     
-    self.events.append(self.player_stats(player_name))
+    #self.events.append(self.player_stats(player_name))
 
   def player_inventory(self, player_name):
     
@@ -810,7 +900,6 @@ class Game:
   def in_attack_range(self, attacker, target):
     
     distance = self.get_distance_between(attacker,target)
-
     if attacker.__class__.__name__ == 'Player':
       attack_type = self.get_player_attack_type(attacker.name)
       if attack_type == 'slash':
@@ -855,7 +944,8 @@ class Game:
     for e in self.events[self.last_event:]:
       #if e['type'] in ['playermove','npcmove','monstermove']:
       #  continue
-      log.msg( "EVENT %s: %s" % (e['type'], e) )
+      #log.msg( "EVENT %s: %s" % (e['type'], e) )
+      pass
 
     self.last_event = len(self.events)
 

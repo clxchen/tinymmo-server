@@ -37,11 +37,11 @@ class Zone:
     self.borders = borders
     
     # Logic to load zone file
-    self.data = pytmx.TiledMap('server_data/zones/' + source)
+    self.data = pytmx.TiledMap('server_data/zones/' + source + '.tmx')
     
     self.client_data = ''
-    with open('server_data/zones/' + source, 'r') as zonefile:
-      self.client_data = zonefile.read()
+    #with open('server_data/zones/' + source, 'r') as zonefile:
+    #  self.client_data = zonefile.read()
     
     self.width = self.data.width
     self.height = self.data.height
@@ -50,12 +50,12 @@ class Zone:
  
     self.graph = GridWithWeights(self.width, self.height)
    
-    self.graph.walls = [ (x,self.height - y - 1) for x,y,gid in self.data.layers[self.blocked].tiles() ] 
+    self.graph.walls = [ (x,y) for x,y,gid in self.data.layers[self.blocked].tiles() ] 
 
     for o in self.data.objects:
       if o.type == 'monster_spawn':
         x = int(o.x/32)
-        y = self.height - int(o.y/32) - 1
+        y = int(o.y/32) - 1
         w = int(o.width/32)
         h = int(o.height/32)
         max_spawn = int(o.properties['max_spawn'])
@@ -67,7 +67,7 @@ class Zone:
       
       if o.type == 'npc_spawn':
         x = int(o.x/32)
-        y = self.height - int(o.y/32) - 1
+        y = int(o.y/32) - 1
         w = int(o.width/32)
         h = int(o.height/32)
         max_spawn = int(o.properties['max_spawn'])
@@ -79,9 +79,9 @@ class Zone:
 
       if o.type == 'warp':
         x = int(o.x/32)
-        y = self.height - int(o.y/32) - 1
-        #w = int(o.width/32)
-        #h = int(o.height/32)
+        y = int(o.y/32) - 1
+        w = int(o.width/32)
+        h = int(o.height/32)
         end_zone = o.properties['end_zone']
         end_x = int(o.properties['end_x'])
         end_y = int(o.properties['end_y'])
@@ -157,7 +157,7 @@ class Zone:
       return False
     elif y < 0:
       return False
-    elif self.data.get_tile_gid(x, self.height - y - 1, self.blocked) > 0:
+    elif self.data.get_tile_gid(x, y, self.blocked) > 0:
       return False
     else:
       return True

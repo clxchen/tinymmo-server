@@ -3,6 +3,7 @@ import time
 import copy
 from npc import Npc
 from twisted.internet import task
+from twisted.python import log
 import ConfigParser
 
 class NpcSpawn:
@@ -25,6 +26,8 @@ class NpcSpawn:
     self.spawn_task = task.LoopingCall(self.spawn)
     self.spawn_task.start(self.spawn_delay, now=False)
  
+    log.msg( "Loaded NPC SPAWN %s" % self.name )
+
   def spawn(self):
 
     if self.spawn_count < self.spawn_max:

@@ -14,16 +14,19 @@ class GameProtocol(basic.LineReceiver):
       self.player_name = None
       self.authenticated = False
       self.last_event = len(self.factory.world.events)
+      self.events_task = task.LoopingCall(self.sendevents)
 
     def connectionMade(self):
       log.msg( "Connection made" )
       self.factory.clients.add(self)
+      self.transport.write(self.prepare({"type": "playeroptions"}))
 
     def connectionLost(self, reason):
       log.msg( "Connection lost" )
       if self.player_name: 
         self.factory.world.player_leave(self.player_name)
-      
+        self.events_task.stop()
+
       self.factory.clients.remove(self)
 
     def prepare(self, data):
@@ -36,7 +39,6 @@ class GameProtocol(basic.LineReceiver):
         final = json.dumps(data)
       except:
         final = ""
-
       return final + "\r\n"
 
     def unpack(self, data):
@@ -47,7 +49,8 @@ class GameProtocol(basic.LineReceiver):
 
       try:
         final = json.loads(data)
-      except:
+      except Exception as err:
+        print err
         final = None
 
       return final
@@ -60,33 +63,22 @@ class GameProtocol(basic.LineReceiver):
         self.login(line)
 
     def login(self, line):
+      # Create a new player
       data = self.unpack(line)
-      userok = False
-      passok = False
-      if data:
-        if data['name'] in self.factory.world.players.keys():
-          if not self.factory.world.players[data['name']].online:
-            userok = True
-        if userok:
-          if data['password'] == self.factory.world.players[data['name']].password:
-            passok = True
-      
-      if not passok:
-        self.transport.write(self.prepare({"type": "loginfailed", "message": "bad username or password"}))
-        return False
-      if not userok:
-        self.transport.write(self.prepare({"type": "loginfailed", "message": "bad username or password"}))
-        return False
-    
-      self.authenticated = True 
-      self.player_name = data['name']
-      self.factory.world.player_join(self.player_name)
-      self.transport.write(self.prepare({"type": "loginsucceeded", "message": "request initial data"}))
 
-      # Start sending events
-      e = task.LoopingCall(self.sendevents)
-      e.start(0.1)
-      return True
+      if data:
+
+        if data['action'] == 'createplayer':
+          gender = 'male'
+          hairstyle = 'plain'
+          haircolor = 'brown'
+          player_class = 'fighter'
+          self.player_name = self.factory.world.create_player(data['name'], gender, hairstyle, haircolor)
+          self.transport.write(self.prepare({"type": "loginsucceeded"}))
+          self.authenticated = True
+          
+          # Start sending events
+          self.events_task.start(0.1)
 
     def playing(self, line): 
       data = self.unpack(line)

@@ -60,6 +60,10 @@ class Npc:
     self.update_task = task.LoopingCall(self.update)
     self.update_task.start(1.0)
 
+    # Schedule regen task
+    self.regen_task = task.LoopingCall(self.regen)
+    self.regen_task.start(5.0)
+    
     self.world.npcs[self.name] = self
       
     self.world.events.append({ 'type': 'addnpc', 'gender': self.gender, 'body': self.body, 'hairstyle': self.hairstyle, 'haircolor': self.haircolor, 'armor': self.armor, 'head': self.head, 'weapon': self.weapon, 'title': self.title, 'name': self.name, 'x': self.x, 'y': self.y, 'zone': self.zone, 'villan': self.villan })
@@ -93,6 +97,19 @@ class Npc:
     
     self.hp[0] -= damage
 
+    self.world.events.append({'type': 'npcdamage', 'name': self.name, 'zone': self.zone, 'hp': self.hp, 'damage': damage })
+
+
+  def regen(self):
+
+    if self.mode == 'wait':
+      # heal 5% per second while waiting
+      if self.hp[0] < self.hp[1]:
+        heal = self.hp[1]/20 + 1
+        self.hp[0] += heal
+        if self.hp[0] > self.hp[1]:
+          self.hp[0] = self.hp[1]
+        self.world.events.append({'type': 'npcheal', 'name': self.name, 'hp': self.hp, 'zone': self.zone, 'heal': heal})
 
   def update(self):
     # Are we dead:
@@ -101,18 +118,6 @@ class Npc:
         self.mode = 'dead'
         self.world.events.append({ 'type': 'npcdie', 'name': self.name, 'title': self.title, 'zone': self.zone })
         reactor.callLater(2.0, self.world.cleanup_npc, self)
-
-    if self.mode == 'wait':
-      # heal 10% per second while waiting
-      if self.hp[0] < self.hp[1]:
-        self.hp[0] += self.hp[1]/10
-      if self.mp[0] < self.mp[1]:
-        self.mp[0] += self.mp[1]/10
-      # but dont go over!
-      if self.hp[0] > self.hp[1]:
-        self.hp[0] = self.hp[1]
-      if self.mp[0] > self.mp[1]:
-        self.mp[0] = self.mp[1]
 
     elif self.mode == 'wander':
       
@@ -211,9 +216,9 @@ class Npc:
       elif dest[0] < self.x:
         self.direction = 'west'
       
-      if dest[1] > self.y:
+      if dest[1] < self.y:
         self.direction = 'north'
-      elif dest[1] < self.y:
+      elif dest[1] > self.y:
         self.direction = 'south'  
       
       self.world.events.append({ 'type': 'npcmove', 'speed': 'fast', 'name': self.name, 'zone': self.zone, 'direction': self.direction, 'start': (self.x,self.y), 'end': dest })
