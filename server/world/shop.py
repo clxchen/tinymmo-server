@@ -71,7 +71,7 @@ class Shop:
 
     inv = {}
     for name,item in self.inventory.items():
-      inv[name] = { 'title': item.title, 'slot': item.slot, 'hit': item.hit, 'dam': item.dam, 'arm': item.arm, 'value': item.value, 'icon': item.icon }
+      inv[name] = { 'title': item.title, 'slot': item.slot, 'hit': item.hit, 'dam': item.dam, 'arm': item.arm, 'value': item.value, 'gear_type': item.gear_type }
 
     return inv
 

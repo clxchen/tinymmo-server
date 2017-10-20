@@ -66,7 +66,7 @@ class Npc:
     
     self.world.npcs[self.name] = self
       
-    self.world.events.append({ 'type': 'addnpc', 'gender': self.gender, 'body': self.body, 'hairstyle': self.hairstyle, 'haircolor': self.haircolor, 'armor': self.armor, 'head': self.head, 'weapon': self.weapon, 'title': self.title, 'name': self.name, 'x': self.x, 'y': self.y, 'zone': self.zone, 'villan': self.villan })
+    self.world.events.append({ 'type': 'addnpc', 'gender': self.gender, 'body': self.body, 'hairstyle': self.hairstyle, 'haircolor': self.haircolor, 'armor': self.armor, 'head': self.head, 'weapon': self.weapon, 'title': self.title, 'name': self.name, 'x': self.x, 'y': self.y, 'zone': self.zone, 'villan': self.villan, 'quest': self.quest, 'shop': self.shop })
 
   def unload(self):
     self.update_task.stop()
@@ -85,7 +85,9 @@ class Npc:
              'x': self.x, 
              'y': self.y, 
              'zone': self.zone,
-             'villan': self.villan, }
+             'villan': self.villan,
+             'quest': self.quest,
+             'shop': self.shop, }
   
   def take_damage(self, attacker, damage):
 

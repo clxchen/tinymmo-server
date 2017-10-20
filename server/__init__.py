@@ -23,10 +23,4 @@ def start():
   loop = task.LoopingCall(game.loop)
   loop.start(0.05)
 
-  # Game data server
-  client_resources = '/tmp/pub/'
-  p = Portal( FTPRealm(client_resources), [AllowAnonymousAccess()])
-  f = FTPFactory(p)
-  reactor.listenTCP(10001, f)
-
   reactor.run()

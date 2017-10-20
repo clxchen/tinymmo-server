@@ -95,11 +95,11 @@ class Game:
     elif data['action'] == 'unequip':
       self.player_unequip(player_name, data['item'])
    
-    elif data['action'] == 'buy':
-      send_now = self.player_buy(player_name, data['item'])
+    elif data['action'] == 'buyshopitem':
+      send_now = self.buy_shop_item(data['name'], data['item_name'], player_name)
 
-    elif data['action'] == 'sell':
-      self.player_sell(player_name, data['item'])
+    elif data['action'] == 'sellitem':
+      send_now = self.sell_shop_item(player_name, data['item_name'], data['shop_name'])
   
     elif data['action'] == 'drop':
       self.player_drop(player_name, data['item'])
@@ -154,6 +154,21 @@ class Game:
       npc = self.npcs[data['name']].state()
       npc['type'] = 'addnpc'
       send_now = {'type': 'events', 'events': [ npc ] }
+
+    elif data['action'] == 'getcontainerinv':
+      if self.containers.has_key(data['name']):
+        if self.containers[data['name']].owner == player_name:
+          send_now = self.get_container_inv(data['name'])
+    
+    elif data['action'] == 'takecontaineritem':
+      if self.containers.has_key(data['name']):
+        if self.containers[data['name']].owner == player_name:
+          send_now = self.take_container_item(data['name'], data['item_name'], player_name)
+    
+    elif data['action'] == 'getshopinv':
+      if self.shops.has_key(data['name']):
+        send_now = self.get_shop_inv(data['name'], player_name)
+                    
     else:
       print data
        
@@ -290,7 +305,6 @@ class Game:
         item = Item(i, None, container_name, False, self)
     
     if create_container:
-      print "Create container!"
       self.containers[container_name] = Container(title, container_name, x, y, zone, monster.target.name)
       self.events.append({'type': 'addcontainer', 'name': container_name, 'title': title, 'x': x, 'y': y, 'zone': zone })
     
@@ -317,10 +331,9 @@ class Game:
     x = npc.x
     y = npc.y
     zone = npc.zone
-    source = 'data/LPC Base Assets/tiles/chests.png' #TODO: gravestone? corpse?
 
     # award random amount of gold 
-    npc.target.gold += random.randint(self.loot[npc.loot].gold_min, self.loot[npc.loot].gold_max)
+    #npc.target.gold += random.randint(self.loot[npc.loot].gold_min, self.loot[npc.loot].gold_max)
     
     create_container = False
     # 50% chance of common 
@@ -342,7 +355,7 @@ class Game:
         item = Item(i, None, container_name, False, self)
 
     if create_container:
-      self.containers[container_name] = Container(title, container_name, x, y, zone, npc.target.name, source, 32, 32, 0, 0)
+      self.containers[container_name] = Container(title, container_name, x, y, zone, npc.target.name)
       self.events.append({'type': 'addcontainer', 'name': container_name, 'title': title, 'x': x, 'y': y, 'zone': zone, 'source': source, 'source_w': 32, 'source_h': 32, 'source_x': 0, 'source_y': 0})
     
     # clean up container after 60 sec
@@ -350,6 +363,41 @@ class Game:
 
     npc.spawn.spawn_count -= 1
     del self.npcs[npc.name]
+
+  def get_shop_inv(self, name, player_name):
+    
+    player_inv = self.player_inventory(player_name)
+
+    # TODO Filter out stuff player not allowed to sell
+    # TODO ONly return if player is in good range of shop
+
+    return { 'type': 'shopinv', 'name': name, 'title': self.shops[name].title, 'inventory': self.shops[name].get_inventory(), 'player_inventory': player_inv['inventory'] }
+
+  def get_container_inv(self, name):
+    
+    # TODO: Only reutrn if player is in good range of container
+     
+    inv = {}
+    for k,v in self.items.items():
+      if v.container == name and v.player == None:
+        inv[k] = v.state()
+    
+    return { 'type': 'containerinventory', 'name': name, 'title': self.containers[name].title, 'inventory': inv }
+
+  def take_container_item(self, container_name, item_name, player_name):
+
+    if self.items.has_key(item_name):
+      if self.items[item_name].container == container_name:
+        self.items[item_name].player = player_name
+        self.items[item_name].container = None
+
+    return self.get_container_inv(container_name)
+
+  def buy_shop_item(self, shop_name, item_name, player_name):
+    
+    self.shops[shop_name].buy(item_name, player_name)
+
+    return self.get_shop_inv(shop_name, player_name) 
 
   def cleanup_container(self, container_name):
 
@@ -682,16 +730,12 @@ class Game:
 
     return { 'type': 'message', 'message': "You took the %s" % self.items[item_name].title }
 
-  def player_sell(self, player_name, item_name):
-
-    shop = self.players[player_name].target.shop
+  def sell_shop_item(self, player_name, item_name, shop_name):
     
-    if not self.shops.has_key(shop):
-      return
-  
-    self.shops[shop].sell(item_name, player_name)
-    
-    return { 'type': 'message', 'message': "You sold a %s" % item_name }
+    if self.shops.has_key(shop_name):
+      self.shops[shop_name].sell(item_name, player_name)
+   
+    return self.get_shop_inv(shop_name, player_name) 
   
   def player_use(self, player_name, item_name):
     # Skip if this item doesn't exist
