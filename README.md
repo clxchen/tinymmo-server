@@ -37,10 +37,21 @@ The game ships with a very simple world, consisting of the town of Stuck and sur
 
 ### Class/Attribute system:
 
-Strength - Governs hit with melee weapons, damage with range and melee weapons
-Speed - Governs hit with range weapons, small influence on armor class
-Intellect - Governs Magic use and hit with wands
+Inspired by tri-stat rules
 
+ATTRIBUTES:
+
+Body: a measure of the character's physical prowess and health.
+Mind: a measure of the character's mental capacity and intelligence.
+Soul: a measure of the character's spirit and willpower.
+
+
+DERIVED ATTRIBUTES:
+
+Attack Combat Value: (ACV) [(Body + Mind + Soul) / 3] which is the focus of all the character's Stats to determine their bonus to Hit an opponent during combat scenes.
+Defense Combat Value: (DCV) [(Body + Mind + Soul) / 3 - 2] which is the character's ability to react against incoming attacks.
+Health Points: [(Body + Soul) × 5] which is the amount of damage a character can withstand before they are knocked unconscious or killed. These are similar to hit points in other games.
+Energy Points: [(Mind + Soul) × 5] an optional Stat used for fueling certain superpower Attributes. When a character runs out of Energy Points, they can no longer use that power.
 
 Ability trees:
 
