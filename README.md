@@ -49,34 +49,16 @@ The game ships with a very simple world, consisting of the town of Stuck and sur
 
 #### Abilities:
 
-All abilities avaliable to all classes. Purchased at a appropriate trainer using Character points. Effectiveness of abilitiy increased by spending more points on it. Points earned at 1 per level. Abilities include spells and other special attacks. Some abilities require the player to be at a certain level.
+Required level, ability title, description, effects
 
-* Magic Tree:
-- Fireball (damage to target at range)
-- Ice Shield (armor bonus to target for next minute)
-- Snake Bite (damage at range plus hit pentalty to target at range for next minute)
-- Spikes (damage plus armor penalty to target at range for next minute)
-- Tornado (damage plus dam penalty to target for next minute)
-- Tentacles (damage multiple targets plus hit pentalty at range for next minute)
-- Water Tentacle (damage multiple targets plus dam penalty at range for next minute)
-- Ice Tentacle (damage multiple targets plus armor penalty at range for next minute)
-- Wandmaster (permanent bonus to wand damage)
-* Combat Tree:
-- Armor Training (can wear various levels of armor)
-- Concussing Shot (hit penalty to target for next minute)
-- Disarm (damage penalty to target for next minute)
-- Find Weakness (armor penalty to target for next minute)
-- Multi-Shot (damage to multiple targets with bow)
-- Aggresive Stance (extra damage at cost of armor for next minute)
-- Defensive Stance (extra armor at cost of damage for next minute)
-- Patience Stance (extra hit at cost of damage for next minute)
-- Swordmaster (permanent bonus to sword damage)
-- Spearmaster (permanent bonus to spear damage)
-* Spirit Tree:
-- Heal Wounds (restore target health at range)
-- Summon Bee (summon a bee to fight along sight the player for one minute)
-- Summon Bat (summon a bat to fight along side the player for one minute) 
-- Summon Snake (summon a snake to fight along side the player for one minute) 
-- Heal Allies (restore health to multiple targets in range)
-- Stavemaster (permanent bonus to staff damage)
+1 Incinerate (damage to target at range)
+2 Heal Wounds (restore HP to target)
+4 Ice Shield (armor bonus to target for next minute)
+6 Snake Bite (damage plus hit penalty to target at range for next minute)
+8 Spikes (damage plus armor penalty to target at range for next minute)
+10 Tornado (damage plus dam penalty to target for next minute)
+12 Tentacles (damage multiple targets plus hit pentalty at range for next minute)
+14 Water Tentacle (damage multiple targets plus dam penalty at range for next minute)
+16 Ice Tentacle (damage multiple targets plus armor penalty at range for next minute)
+
 
