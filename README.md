@@ -35,37 +35,60 @@ The game ships with a very simple world, consisting of the town of Stuck and sur
 
 ## Notes:
 
-### Class/Attribute system:
+### Attribute system:
 
-Strength - Governs hit with melee weapons, damage with range and melee weapons
-Speed - Governs hit with range weapons, small influence on armor class
-Intellect - Governs Magic use and hit with wands
+* HIT - Chance to hit target with a weapon. Derived from equipment.
+* DAM - Damage done by a weapon. Derived from equipment.
+* ARM - Armor granted by equipment. Derived from equipment.
+* HP - Health Points. 10 + Level * 1.5
+* EP - Energy Points 10 + Level * 1.5
+
+### Class Abilities:
+
+Each ability costs more points to buy than the last. Get one point per level.
+
+* Fighter:
+- Class bonus: +25% damage with swords and spears, +20% HP
+- Aggresive Stance (bonus to damage next minute)
+- Defensive Stance (bonus to armor next minute)
+- Patient Stance (bonus to hit for next minute)
+- 
+-
+- 
+- 
+-
+
+* Mage:
+- Class bonus: +25% damage with wands, +20% EP
+- Fireball (damage to target at range)
+- Ice Shield (armor bonus to target for next minute)
+- Snake Bite (damage at range plus hit pentalty to target at range for next minute)
+- Spikes (damage plus armor penalty to target at range for next minute)
+- Tornado (damage plus dam penalty to target for next minute)
+- Tentacles (damage multiple targets plus hit pentalty at range for next minute)
+- Water Tentacle (damage multiple targets plus dam penalty at range for next minute)
+- Ice Tentacle (damage multiple targets plus armor penalty at range for next minute)
+
+* Ranger:
+- Class bonus: +25% damage with bows, +10% HP, +10% EP
+- Aim Well (extra hit for next minute)
+- Concussing Shot (hit penalty to target for next minute)
+- Disarm (damage penalty to target for next minute)
+- Find Weakness (armor penalty to target)  
+- Summon Bat (summon a bat to fight along side the player for one minute) 
+- Summon Snake (summon a snake to fight along sight the player for one minute)
+- Summon ____
+- Multi-Shot (damage to multiple targets at range)
+
+* Cleric:
+* Class Bonus: +25% damage with staffs, +10% HP, + 10% EP
+- Heal Wounds (restore target health at range)
+-
+-
+-
+-
+-
+-
+- Heal Allies (restore health to multiple targets in range)
 
 
-Ability trees:
-
-Fighter:
- - Battlefield Abilities:  utility abilities
- - * "Battle Hardened" - Percent bonus to HP
- - Arms Abilities: Skills with melee weapons
- - * "Swords" - Bonus to slash damage
- - * "Spears" - Bonus to thrust damage
- - * "Tactician" - Bonus to hit chance
- - * "Repost" - Next hit will do +50% damage. Use once a minute.
- - * "Rampage" - Damage all targets in area.
- - Armor Abilities: Skills with armors
- - * "Battle Tested" - Percent bonus to armor
-
-
-Ranger:
- - Fieldsman Abilities: Some healing, bonuses to self and party
- - Marksman Abilities: Skills with range weapons
- - Wildlife Abilities: Skills with monsters (summon a monster to fight along side?)
-
-Mage:
- - Life Magic: Strong healing magic, bonuses to self and party
- - * "Heal Wounds" - Heal single target
- - * "Health Fountain" - Heal all players in area
- - Death Magic: Combat magic, summon skeleton to help fight?
- - * "Curse" - HP and MP draining spell
- - Elemental Magic: Fireballs, ice bolts and other fun stuff (summon elemental to fight alon side?)

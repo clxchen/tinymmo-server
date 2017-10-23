@@ -204,9 +204,6 @@ class Player:
       # reward some stats
       self.hp[1] += int(self.level * 1.5)
       self.mp[1] += int(self.level * 1.5)
-      self.arm = int(self.level * 1.5)
-      self.dam = int(self.level * 1.5)
-      self.hit = int(self.level * 1.5)
 
     if self.mode == 'wait':
       # heal 5% per second while waiting
