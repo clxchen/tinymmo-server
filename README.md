@@ -60,7 +60,9 @@ All abilities avaliable to all classes. Purchased at a appropriate trainer using
 - Tentacles (damage multiple targets plus hit pentalty at range for next minute)
 - Water Tentacle (damage multiple targets plus dam penalty at range for next minute)
 - Ice Tentacle (damage multiple targets plus armor penalty at range for next minute)
+- Wandmaster (permanent bonus to wand damage)
 * Combat Tree:
+- Armor Training (can wear various levels of armor)
 - Concussing Shot (hit penalty to target for next minute)
 - Disarm (damage penalty to target for next minute)
 - Find Weakness (armor penalty to target for next minute)
@@ -68,11 +70,13 @@ All abilities avaliable to all classes. Purchased at a appropriate trainer using
 - Aggresive Stance (extra damage at cost of armor for next minute)
 - Defensive Stance (extra armor at cost of damage for next minute)
 - Patience Stance (extra hit at cost of damage for next minute)
-* Wilderness Tree:
+- Swordmaster (permanent bonus to sword damage)
+- Spearmaster (permanent bonus to spear damage)
+* Spirit Tree:
 - Heal Wounds (restore target health at range)
 - Summon Bee (summon a bee to fight along sight the player for one minute)
 - Summon Bat (summon a bat to fight along side the player for one minute) 
 - Summon Snake (summon a snake to fight along side the player for one minute) 
 - Heal Allies (restore health to multiple targets in range)
-
+- Stavemaster (permanent bonus to staff damage)
 
