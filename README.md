@@ -35,7 +35,10 @@ The game ships with a very simple world, consisting of the town of Stuck and sur
 
 ## Notes:
 
-### Attribute system:
+### Stats system:
+
+
+#### Stats:
 
 * HIT - Chance to hit target with a weapon. Derived from equipment.
 * DAM - Damage done by a weapon. Derived from equipment.
@@ -43,23 +46,12 @@ The game ships with a very simple world, consisting of the town of Stuck and sur
 * HP - Health Points. 10 + Level * 1.5
 * EP - Energy Points 10 + Level * 1.5
 
-### Class Abilities:
 
-Each ability costs more points to buy than the last. Get one point per level.
+#### Abilities:
 
-* Fighter:
-- Class bonus: +25% damage with swords and spears, +20% HP
-- Aggresive Stance (bonus to damage next minute)
-- Defensive Stance (bonus to armor next minute)
-- Patient Stance (bonus to hit for next minute)
-- 
--
-- 
-- 
--
+All abilities avaliable to all classes. Purchased at a appropriate trainer using Character points. Effectiveness of abilitiy increased by spending more points on it. Points earned at 1 per level. Abilities include spells and other special attacks. Some abilities require the player to be at a certain level.
 
-* Mage:
-- Class bonus: +25% damage with wands, +20% EP
+* Magic Tree:
 - Fireball (damage to target at range)
 - Ice Shield (armor bonus to target for next minute)
 - Snake Bite (damage at range plus hit pentalty to target at range for next minute)
@@ -68,27 +60,19 @@ Each ability costs more points to buy than the last. Get one point per level.
 - Tentacles (damage multiple targets plus hit pentalty at range for next minute)
 - Water Tentacle (damage multiple targets plus dam penalty at range for next minute)
 - Ice Tentacle (damage multiple targets plus armor penalty at range for next minute)
-
-* Ranger:
-- Class bonus: +25% damage with bows, +10% HP, +10% EP
-- Aim Well (extra hit for next minute)
+* Combat Tree:
 - Concussing Shot (hit penalty to target for next minute)
 - Disarm (damage penalty to target for next minute)
-- Find Weakness (armor penalty to target)  
-- Summon Bat (summon a bat to fight along side the player for one minute) 
-- Summon Snake (summon a snake to fight along sight the player for one minute)
-- Summon ____
-- Multi-Shot (damage to multiple targets at range)
-
-* Cleric:
-* Class Bonus: +25% damage with staffs, +10% HP, + 10% EP
+- Find Weakness (armor penalty to target for next minute)
+- Multi-Shot (damage to multiple targets with bow)
+- Aggresive Stance (extra damage at cost of armor for next minute)
+- Defensive Stance (extra armor at cost of damage for next minute)
+- Patience Stance (extra hit at cost of damage for next minute)
+* Wilderness Tree:
 - Heal Wounds (restore target health at range)
--
--
--
--
--
--
+- Summon Bee (summon a bee to fight along sight the player for one minute)
+- Summon Bat (summon a bat to fight along side the player for one minute) 
+- Summon Snake (summon a snake to fight along side the player for one minute) 
 - Heal Allies (restore health to multiple targets in range)
 
 
