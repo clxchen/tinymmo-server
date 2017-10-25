@@ -8,13 +8,13 @@ from twisted.python import log
 
 from player import Player,load_players
 from zone import Zone,load_zones
-from spell import Spell
 from container import Container
 from item import Item
 from warp import Warp
 from shop import Shop,load_shops
 from quest import Quest,load_quests
 from loot import Loot,load_loot
+from ability import Ability, load_abilities
 
 class Game:
 
@@ -73,8 +73,12 @@ class Game:
     self.quests = {}
     load_quests(self)
 
-    # Spells table
-    self.spells = {}
+    # Abilities table
+    self.abilities = {}
+    load_abilities(self)
+
+    # Track buffs/debuffs
+    self.active_effects = {}
 
     # loop task
     self.loop_task = task.LoopingCall(self.loop)
@@ -523,6 +527,10 @@ class Game:
       self.players[player_name].target = None
       return { 'type': 'unsettarget', }
 
+  def player_cast(self, player_name, ability):
+
+    pass
+
   def player_leave(self, player_name):
       
     # Add dropplayer event
@@ -858,18 +866,6 @@ class Game:
     
     # Player disengages and stops fighting
     self.players[player_name].fighting = False
-
-  def player_cast(self, player_name, spell, target):
-    
-    # Can't cast if fighting 
-    if not self.players[player_name].free():
-      return
-    
-    if spell in self.players[player_name].spells:
-      zone = self.players[player_name].zone
-      caster_anim = self.spells[spell].caster_source
-      target_anim = self.spells[spell].target_source
-      self.events.append({ 'type': 'playercast', 'name': player_name, 'zone':  zone, 'caster_anim': caster_anim, 'target': target, 'target_anim': target_anim })
       
   def get_player_dam(self, player_name):
     '''
