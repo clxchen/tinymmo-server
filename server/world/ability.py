@@ -60,6 +60,8 @@ class Ability:
 
     self.active_index = 0
 
+    log.msg( "Loaded ABILITY %s" % self.name )
+
   def activate(self, actor, target):
     
     # Stuff that happens before the ability is applied. Add 'playercast'
@@ -77,7 +79,7 @@ class Ability:
     # Apply buffs/debuffs
     # Apply MP cost to actor
     
-    self.world.events.append({'type': 'effect', 'name': self.animation, 'target': target.name, 'duration': self.duration })
+    self.world.events.append({'type': 'addeffect', 'name': self.animation, 'target': target.name, 'duration': self.duration })
 
     # set target's target to actor if bad things done to target
     if self.target_hp < 0 or self.target_mp < 0 or self.target_hit < 0 or self.target_dam < 0 or self.target_arm < 0:
@@ -85,10 +87,12 @@ class Ability:
 
     # Update target hp/mp
     target.hp[0] += self.target_hp
-    if actor.hp[0] > actor.hp[1]:
+    if actor.hp[0] < actor.hp[1]:
       actor.hp[0] = actor.hp[1]
 
     target.mp[0] += self.target_mp
+    if target.mp[0] < target.mp[1]:
+      target.mp[0] = target.mp[1]
 
     # Add effects on target to active effects table
     effects_on_target = { 'target': target.name,
@@ -102,13 +106,14 @@ class Ability:
     
     reactor.callLater(duration, self.cleanup, name)
 
-    
     # update actor hp/mp
     actor.hp[0] += self.actor_hp
     if actor.hp[0] > actor.hp[1]:
       actor.hp[0] = actor.hp[1]
 
     actor.mp[0] += self.actor_mp
+    if actor.mp[0] < actor.mp[1]:
+      actor.mp[0] = actor.mp[1]
 
     # Add effets on actor to active effects table
     effects_on_actor  = { 'target': target.name,

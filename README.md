@@ -27,13 +27,11 @@ source pyenv/bin/activate
 python game_server.py
 ```
 
-The game ships with a very simple world, consisting of the town of Stuck and surrounding territory. 
-
-## Worldbuilding
+### The World
 
  TODO
 
-## Notes:
+### Mechanics
 
 #### Stats:
 
@@ -43,9 +41,9 @@ The game ships with a very simple world, consisting of the town of Stuck and sur
 * HP - Health Points
 * MP - Magic Points
 
-
 #### Abilities:
 
+- Spells
 * Incinerate (damage to target at range)
 * Heal Wounds (restore HP to target)
 * Ice Shield (armor bonus to target for next minute)
@@ -56,5 +54,4 @@ The game ships with a very simple world, consisting of the town of Stuck and sur
 * Tentacles (damage multiple targets plus hit pentalty at range for next minute)
 * Water Tentacle (damage multiple targets plus dam penalty at range for next minute)
 * Ice Tentacle (damage multiple targets plus armor penalty at range for next minute)
-
 
