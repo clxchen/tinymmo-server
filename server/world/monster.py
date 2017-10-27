@@ -30,14 +30,16 @@ class Monster:
     self.hit    = Monster.config.getint(name, 'hit')
     self.arm    = Monster.config.getint(name, 'dam')
     self.dam    = Monster.config.getint(name, 'arm')
+    self.spi    = Monster.config.getint(name, 'spi')
     self.mode   = Monster.config.get(name, 'mode')
     self.loot   = Monster.config.get(name, 'loot')
-    
     self.attack_speed  = Monster.config.getfloat(name, 'speed')
 
     self.target = None
 
     self.ready_to_attack = True
+    
+    self.active_effects = {}
 
     self.update_task = task.LoopingCall(self.update)
     self.update_task.start(1.0)

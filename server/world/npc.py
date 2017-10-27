@@ -30,6 +30,7 @@ class Npc:
     self.hit       = Npc.config.getint(name, 'hit')
     self.dam       = Npc.config.getint(name, 'dam')
     self.arm       = Npc.config.getint(name, 'arm')
+    self.spi       = Npc.config.getint(name, 'spi')
     self.mode      = Npc.config.get(name, 'mode')
     self.gender    = Npc.config.get(name, 'gender')
     self.body      = Npc.config.get(name, 'body')
@@ -47,7 +48,8 @@ class Npc:
     self.attack_type = 'slash'
     self.target      = None 
     self.path        = []
-
+    self.active_effects = {}
+    self.abilities_in_cooldown = {}
     self.ready_to_attack = True
     
     if self.weapon in [ 'sword', 'wand' ]:
@@ -101,6 +103,15 @@ class Npc:
 
     self.world.events.append({'type': 'npcdamage', 'name': self.name, 'zone': self.zone, 'hp': self.hp, 'damage': damage })
 
+  def heal(self, health):
+
+    self.hp[0] += health
+    
+    if self.hp[0] > self.hp[1]:
+      self.hp[0] = self.hp[1]
+      health = 0
+    
+    self.world.events.append({'type': 'playerheal', 'name': self.name, 'hp': self.hp, 'zone': self.zone, 'heal': health})
 
   def regen(self):
 

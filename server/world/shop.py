@@ -8,7 +8,7 @@ class ShopItem:
   '''
   mi_index = 0
 
-  def __init__(self, name, title, gear_type, slot, hit, dam, arm, value, icon):
+  def __init__(self, name, title, gear_type, slot, hit, dam, arm, spi, value, icon):
     
     self.name      = name
     self.title     = title
@@ -17,6 +17,7 @@ class ShopItem:
     self.hit       = hit
     self.dam       = dam
     self.arm       = arm
+    self.spi       = spi
     self.value     = value 
     self.icon      = icon
 
@@ -60,10 +61,11 @@ class Shop:
       hit = config.getint(sale_item,'hit')
       dam = config.getint(sale_item,'dam')
       arm = config.getint(sale_item,'arm')
+      spi = config.getint(sale_item,'spi')
       value = config.getint(sale_item,'value')
       icon = config.get(sale_item,'icon')
 
-      self.inventory[sale_item] = ShopItem(sale_item, title, gear_type, slot, hit, dam, arm, value, icon)
+      self.inventory[sale_item] = ShopItem(sale_item, title, gear_type, slot, hit, dam, arm, spi, value, icon)
 
     print "Loaded SHOP",self.name
 
@@ -71,7 +73,7 @@ class Shop:
 
     inv = {}
     for name,item in self.inventory.items():
-      inv[name] = { 'title': item.title, 'slot': item.slot, 'hit': item.hit, 'dam': item.dam, 'arm': item.arm, 'value': item.value, 'gear_type': item.gear_type }
+      inv[name] = { 'title': item.title, 'slot': item.slot, 'hit': item.hit, 'dam': item.dam, 'arm': item.arm, 'spi': item.spi, 'value': item.value, 'gear_type': item.gear_type }
 
     return inv
 

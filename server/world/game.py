@@ -88,7 +88,7 @@ class Game:
     
     send_now = None
     if data['action'] == 'activate':
-      send_now = self.player_activate(player_name)
+      send_now = self.player_activate(player_name, data['ability_name'])
    
     elif data['action'] == 'attack':
       send_now = self.player_attack(player_name)
@@ -123,9 +123,6 @@ class Game:
     elif data['action'] == 'goto': 
       self.player_goto(player_name, data['x'], data['y'])
 
-    elif data['action'] == 'cast':
-      self.player_cast(player_name, data['spell'])
-
     elif data['action'] == 'chat':
       self.chat(player_name, data['message'])
     
@@ -137,7 +134,10 @@ class Game:
    
     elif data['action'] == 'questlog':
       send_now = self.player_questlog(player_name)
-       
+    
+    elif data['action'] == 'abilities':
+      send_now = self.player_abilities(player_name)
+     
     elif data['action'] == 'playerstats':
       send_now = self.player_stats(player_name)
 
@@ -145,19 +145,22 @@ class Game:
       send_now = self.refresh(player_name)
    
     elif data['action'] == 'getmonster':
-      monster = self.monsters[data['name']].state()
-      monster['type'] = 'addmonster'
-      send_now = {'type': 'events', 'events': [ monster ] }
+      if self.monsters.has_key(data['name']):
+        monster = self.monsters[data['name']].state()
+        monster['type'] = 'addmonster'
+        send_now = {'type': 'events', 'events': [ monster ] }
        
     elif data['action'] == 'getplayer':
-      player = self.players[data['name']].state()
-      player['type'] = 'addplayer'
-      send_now = {'type': 'events', 'events': [ player ] }
+      if self.players.has_key(data['name']):
+        player = self.players[data['name']].state()
+        player['type'] = 'addplayer'
+        send_now = {'type': 'events', 'events': [ player ] }
        
     elif data['action'] == 'getnpc':
-      npc = self.npcs[data['name']].state()
-      npc['type'] = 'addnpc'
-      send_now = {'type': 'events', 'events': [ npc ] }
+      if self.npcs.has_key(data['name']):
+        npc = self.npcs[data['name']].state()
+        npc['type'] = 'addnpc'
+        send_now = {'type': 'events', 'events': [ npc ] }
 
     elif data['action'] == 'getcontainerinv':
       if self.containers.has_key(data['name']):
@@ -182,7 +185,7 @@ class Game:
 
     player = self.players[player_name]
     
-    stats = { "title": player.title, "hit": self.get_player_hit(player_name), "dam": self.get_player_dam(player_name), "arm": self.get_player_arm(player_name), "hp": player.hp, "mp": player.mp, "gold": player.gold, "exp": player.exp, "level": player.level }
+    stats = { "title": player.title, "hit": self.get_player_hit(player_name), "dam": self.get_player_dam(player_name), "arm": self.get_player_arm(player_name), "spi": self.get_player_spi(player_name), "hp": player.hp, "mp": player.mp, "gold": player.gold, "exp": player.exp, "level": player.level }
   
     return { "type": "playerstats", "stats": stats }
 
@@ -204,8 +207,9 @@ class Game:
     player_inventory = self.player_inventory(player_name)
     player_stats = self.player_stats(player_name)
     player_quests = self.player_questlog(player_name)
+    player_abilities = self.player_abilities(player_name)
 
-    send_now = { 'type': 'refresh', 'player_name': player_name, 'zone_source': zone_source, 'zone': zone_name, 'players': {}, 'monsters': {}, 'npcs': {}, 'containers': {}, 'player_inventory': player_inventory, 'player_stats': player_stats, 'player_quests': player_quests }
+    send_now = { 'type': 'refresh', 'player_name': player_name, 'zone_source': zone_source, 'zone': zone_name, 'players': {}, 'monsters': {}, 'npcs': {}, 'containers': {}, 'player_inventory': player_inventory, 'player_stats': player_stats, 'player_quests': player_quests, 'player_abilities': player_abilities }
     #send_now = { 'type': 'refresh', 'player_name': player_name, 'zone_data': zone_data, 'zone': zone_name, 'zone_source': zone_source, 'players': {}, 'monsters': {}, 'npcs': {}, 'containers': {} }
     
     # Add players to send_now dataset
@@ -241,17 +245,18 @@ class Game:
   def create_player(self, title, gender, hairstyle, haircolor):
     
     items  = [ 'sword', 'chain_armor', 'chain_hood', 'bow', 'wand', 'spear' ]
-    spells = [ ]
+    abilities = [ 'fire_lion', 'lightning_claw', 'ice_shield' ]
     quests = [ ]
     dam    = 1
     arm    = 1
     hit    = 1
+    spi    = 1
     hp     = 10
     mp     = 10
     gold   = 0
     name   = "player-%s" % self.player_index
     self.player_index += 1
-    new_player = Player(name, title, 0, 0, gender, 'light', hairstyle, haircolor, 'xxxx', self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone, items, spells, quests, hp, mp, hit, dam, arm, self)
+    new_player = Player(name, title, 1, 0, gender, 'light', hairstyle, haircolor, 'xxxx', self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, self)
     new_player.online = True
     return new_player.name
 
@@ -527,10 +532,6 @@ class Game:
       self.players[player_name].target = None
       return { 'type': 'unsettarget', }
 
-  def player_cast(self, player_name, ability):
-
-    pass
-
   def player_leave(self, player_name):
       
     # Add dropplayer event
@@ -605,7 +606,8 @@ class Game:
   def chat(self, player_name, message):
     
     zone = self.players[player_name].zone
-    self.events.append({ 'type': 'playerchat', 'name': player_name, 'zone':  zone, 'message': message })
+    title = self.players[player_name].title
+    self.events.append({ 'type': 'playerchat', 'title': title, 'zone':  zone, 'message': message })
 
   def player_attack(self, player_name):
     player = self.players[player_name]
@@ -619,66 +621,23 @@ class Game:
         if self.in_attack_range(player,player.target):
           player.mode = 'fighting'
  
+  def player_activate(self, player_name, ability):
+    
+    if not self.players.has_key(player_name):
+      return
+    
+    if not self.players[player_name].target:
+      return
+    
+    if ability == 'attack':
+      self.player_attack(player_name)
+      return
   
-  def player_activate(self, player_name):
+    if ability not in self.players[player_name].abilities:
+      return
 
-    target = self.players[player_name].target
-    player = self.players[player_name]
-    send_now = {}
-
-    # if no target, no action
-    if target == None:
-      send_now = { 'type': 'message', 'message': "What to whom?" }
-
-#    # if target is monster, then fight it
-#    elif target.__class__.__name__ == 'Monster':
-#      if self.in_attack_range(player, target):
-#        player.mode = 'fighting'
-#        send_now = { 'type': 'message', 'message': "You attack the %s" % target.title }
-#      else:
-#        send_now = { 'type': 'message', 'message': "You are not in range to attack %s" % target.title }
-
-    # if npc has shop or quest info, they are friendly. no attacking
-    elif target.__class__.__name__ == 'Npc':
-      if target.shop:
-        if self.shops.has_key(target.shop):
-          shop = self.shops[target.shop]
-          send_now = { 'type': 'shop', 'name': target.shop, 'title': shop.title, 'inventory': shop.get_inventory(), 'player_inventory': self.player_inventory(player_name) }
-      
-      elif target.quest:
-        if self.quests.has_key(target.quest):
-          quest = self.quests[target.quest]
-          if quest.avaliable_to(player_name):
-            send_now = { 'type': 'questdialog', 'name': quest.name, 'title': quest.title, 'dialog': quest.dialog }
-      
-#      elif target.villan:
-#        if self.in_attack_range(player, target):
-#          player.mode = 'fighting'
-#          send_now = { 'type': 'message', 'message': "You attack the %s" % target.title }
-#        else:
-#          send_now = { 'type': 'message', 'message': "You are not in range to attack %s" % target.title }
-   
-    elif target.__class__.__name__ == 'Container':
-      inv = {}
-      for name,item in self.items.items():
-        if item.container == target.name:
-          inv[name] = { 'title': item.title, 'slot': item.slot, 'hit': item.hit, 'dam': item.dam, 'arm': item.arm, 'value': item.value, 'icon': item.icon }
-      
-      if len(inv.keys()) > 0:
-        send_now = { 'type': 'container', 'title': target.title,  'inventory': inv }
-      else:
-        send_now = { 'type': 'message', 'message': "There's nothing to take from the %s" % target.title }
-    
-    elif target.__class__.__name__ == 'Player':
-      inv = {}
-      for name,item in self.items.items():
-        if item.player == target.name and item.equipped == False:
-          inv[name] = { 'title': item.title, 'slot': item.slot, 'hit': item.hit, 'dam': item.dam, 'arm': item.arm, 'value': item.value, 'icon': item.icon }
-
-      send_now = { 'type': 'give', 'title': "Give to %s" % target.title,  'inventory': inv }
-    
-
-    return send_now
+    if self.abilities.has_key(ability):
+      self.abilities[ability].activate(self.players[player_name], self.players[player_name].target)
 
 
   def player_accept_quest(self, player_name, quest_name):
@@ -862,6 +821,19 @@ class Game:
     
     return { 'type': 'inventory', 'inventory': inv }
 
+  def player_abilities(self, player_name):
+    
+    # Return hash of player's abilities
+   
+    # Player can alway attack
+    abil = {}
+    abil['attack'] = { 'name': 'attack', 'title': 'Attack', 'icon': 'sword', 'description': 'Engage in combat' }
+
+    for a in self.players[player_name].abilities:
+      abil[a] = self.abilities[a].stats()
+
+    return { 'type': 'abilities', 'abilities': abil }
+
   def player_disengage(self, player_name):
     
     # Player disengages and stops fighting
@@ -873,12 +845,16 @@ class Game:
     '''
     base_damage = self.players[player_name].dam
     gear_damage = 0
+    effect_damage = 0
     
     for item_name,item in self.items.items():
       if item.equipped and item.player == player_name:
         gear_damage += item.dam
     
-    return base_damage + gear_damage
+    for effect_name,effect in self.players[player_name].active_effects.items():
+      effect_damage += effect['dam']
+
+    return base_damage + gear_damage + effect_damage
 
   
   def get_player_hit(self, player_name):
@@ -887,12 +863,16 @@ class Game:
     '''
     base_hit = self.players[player_name].hit
     gear_hit = 0
-    
+    effect_hit = 0
+
     for item_name,item in self.items.items():
       if item.equipped and item.player == player_name:
         gear_hit =+ item.hit
     
-    return base_hit + gear_hit
+    for effect_name,effect in self.players[player_name].active_effects.items():
+      effect_hit += effect['hit']
+
+    return base_hit + gear_hit + effect_hit
 
 
   def get_player_arm(self, player_name):
@@ -901,12 +881,33 @@ class Game:
     '''
     base_arm = self.players[player_name].arm
     gear_arm = 0
-    
+    effect_arm = 0
+     
     for item_name,item in self.items.items():
       if item.equipped and item.player == player_name:
         gear_arm = item.arm
+   
+    for effect_name,effect in self.players[player_name].active_effects.items():
+      effect_arm += effect['arm']
+
+    return base_arm + gear_arm + effect_arm
+
+  def get_player_spi(self, player_name):
+    '''
+    Get spirit of player
+    '''
+    base_spi = self.players[player_name].spi
+    gear_spi = 0
+    effect_spi = 0
     
-    return base_arm + gear_arm
+    for item_name,item in self.items.items():
+      if item.equipped and item.player == player_name:
+        gear_spi = item.spi
+    
+    for effect_name,effect in self.players[player_name].active_effects.items():
+      effect_spi += effect['spi']
+
+    return base_spi + gear_spi + effect_spi
 
 
   def get_player_attack_type(self, player_name):

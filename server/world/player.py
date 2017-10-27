@@ -29,6 +29,7 @@ def load_players(world, x, y, zone):
     hit = pconfig.getint(name,'hit')
     dam = pconfig.getint(name,'dam')
     arm = pconfig.getint(name,'arm')
+    spi = pconfig.getint(name,'spi')
     password = pconfig.get(name,'password')
     items = pconfig.get(name,'items')
     if items:
@@ -37,7 +38,7 @@ def load_players(world, x, y, zone):
     if spells:
       spells = spells.split(',')
     
-    world.players[name] = Player(name, title, level, exp, gender, body, hairstyle, haircolor, password, x, y, zone, spells, hp, mp, hit, dam, arm, world)  
+    world.players[name] = Player(name, title, level, exp, gender, body, hairstyle, haircolor, password, x, y, zone, spells, hp, mp, hit, dam, arm, spi, world)  
     
     # Load player items
     for iname in items:
@@ -47,7 +48,7 @@ class Player:
 
   levels = [ 100, 200, 400, 800, 1600, 3200, 6400, 12800 ]
   
-  def __init__(self, name, title, level, exp, gender, body, hairstyle, haircolor, password, x, y, zone, items, spells, quests, hp, mp, hit, dam, arm, world):
+  def __init__(self, name, title, level, exp, gender, body, hairstyle, haircolor, password, x, y, zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, world):
 
     self.title = title
     self.name = name
@@ -60,14 +61,17 @@ class Player:
     self.password = password
     self.target = None
     self.fighting = False
-    self.spells = spells # list of spells known by this player
+    self.abilities = abilities
     self.quests = quests
+    self.active_effects = {}
+    self.abilities_in_cooldown = {}
     self.running = False
     self.hp = [ hp, hp ]
     self.mp = [ mp, mp ]
     self.hit = hit
     self.dam = dam
     self.arm = arm
+    self.spi = spi
     self.gold = 0
     self.mode = 'wait' # wait, running, fighting, casting, dead
     self.direction = 'south'
@@ -147,6 +151,26 @@ class Player:
 
     self.world.events.append({'type': 'playerdamage', 'name': self.name, 'zone': self.zone, 'hp': self.hp, 'damage': damage })
 
+  def heal(self, health):
+
+    self.hp[0] += health
+    
+    if self.hp[0] > self.hp[1]:
+      self.hp[0] = self.hp[1]
+      health = 0
+    
+    self.world.events.append({'type': 'playerheal', 'name': self.name, 'hp': self.hp, 'zone': self.zone, 'heal': health})
+
+  def restore(self, mana):
+
+    self.mp[0] += mana
+    
+    if self.mp[0] > self.mp[1]:
+      self.mp[0] = self.mp[1]
+      mana = 0
+    
+    self.world.events.append({'type': 'playermprestore', 'name': self.name, 'mp': self.mp, 'zone': self.zone, 'restore': mana})
+
   def warp(self, zone, x, y):
     # Drop player
     self.world.events.append({ 'type': 'dropplayer', 'name': self.name, 'zone': self.zone })
@@ -208,17 +232,11 @@ class Player:
     if self.mode == 'wait':
       # heal 5% per second while waiting
       if self.hp[0] < self.hp[1]:
-        heal = self.hp[1]/20 + 1
-        self.hp[0] += heal
-        if self.hp[0] > self.hp[1]:
-          self.hp[0] = self.hp[1]
-        self.world.events.append({'type': 'playerheal', 'name': self.name, 'hp': self.hp, 'zone': self.zone, 'heal': heal})
-      
-      if self.mp[0] < self.mp[1]:
-        self.mp[0] += self.mp[1]/20 + 1
-        if self.mp[0] > self.mp[1]:
-          self.mp[0] = self.mp[1]
+        self.heal(self.hp[1]/20 + 1)
 
+      # restore 5% per second while waiting
+      if self.mp[0] < self.mp[1]:
+        self.restore(self.mp[1]/20 + 1)
 
   def update(self):
     

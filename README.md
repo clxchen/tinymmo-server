@@ -38,20 +38,24 @@ python game_server.py
 * HIT - Chance to hit
 * DAM - Damage done on hit
 * ARM - Defensive statistic
+* SPI - Mental Prowess
 * HP - Health Points
 * MP - Magic Points
 
 #### Abilities:
 
 - Spells
-* Incinerate (damage to target at range)
+* Fire Lion (damage to target at range)
 * Heal Wounds (restore HP to target)
-* Ice Shield (armor bonus to target for next minute)
 * Snake Bite (damage plus hit penalty to target at range for next minute)
+* Ice Shield (armor bonus to target for next minute)
+* Tornado (damage plus dam penalty to target for next minute)
 * Earth Spikes (damage plus armor penalty to target at range for next minute)
 * Ice Spikes (damage plus armor penalty to target at range for next minute)
-* Tornado (damage plus dam penalty to target for next minute)
-* Tentacles (damage multiple targets plus hit pentalty at range for next minute)
 * Water Tentacle (damage multiple targets plus dam penalty at range for next minute)
 * Ice Tentacle (damage multiple targets plus armor penalty at range for next minute)
+* Lightning Claw (high damage)
+
+
+# Elemental Spells
 
