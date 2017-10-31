@@ -15,6 +15,7 @@ from shop import Shop,load_shops
 from quest import Quest,load_quests
 from loot import Loot,load_loot
 from ability import Ability, load_abilities
+from playerclass import PlayerClass, load_playerclasses
 
 class Game:
 
@@ -76,6 +77,10 @@ class Game:
     # Abilities table
     self.abilities = {}
     load_abilities(self)
+    
+    # Player classes table
+    self.playerclasses = {}
+    load_playerclasses(self)
 
     # Track buffs/debuffs
     self.active_effects = {}
@@ -94,10 +99,10 @@ class Game:
       send_now = self.player_attack(player_name)
        
     elif data['action'] == 'equip':
-      self.player_equip(player_name, data['item'])
+      send_now = self.player_equip(player_name, data['item'])
 
     elif data['action'] == 'unequip':
-      self.player_unequip(player_name, data['item'])
+      send_now = self.player_unequip(player_name, data['item'])
    
     elif data['action'] == 'buyshopitem':
       send_now = self.buy_shop_item(data['name'], data['item_name'], player_name)
@@ -106,10 +111,10 @@ class Game:
       send_now = self.sell_shop_item(player_name, data['item_name'], data['shop_name'])
   
     elif data['action'] == 'drop':
-      self.player_drop(player_name, data['item'])
+      send_now = self.player_drop(player_name, data['item'])
 
     elif data['action'] == 'use':
-      self.player_use(player_name, data['item'])
+      send_now = self.player_use(player_name, data['item'])
     
     elif data['action'] == 'take':
       send_now = self.player_take(player_name, data['item'])
@@ -124,7 +129,7 @@ class Game:
       self.player_goto(player_name, data['x'], data['y'])
 
     elif data['action'] == 'chat':
-      self.chat(player_name, data['message'])
+      self.chat(player_name, str(data['message']))
     
     elif data['action'] == 'disengage':
       self.player_disengage(player_name)
@@ -707,51 +712,55 @@ class Game:
   def player_use(self, player_name, item_name):
     # Skip if this item doesn't exist
     if not self.items.has_key(item_name):
-      return
+      return { 'type': 'message', 'message': 'You cannot use that item.' }
     
     # Skip if this item isn't owned by player
     if self.items[item_name].player != player_name:
-      return
+      return { 'type': 'message', 'message': 'You cannot use that item.' }
+
+    # Skip if item cannot be consumed 
+    if not self.items[item_name].consumeable:
+      return { 'type': 'message', 'message': 'You cannot use that item.' }
     
-    # Skip if this item is already equipped
-    if self.items[item_name].equipped:
-      return
-  
-    item_title = self.items[item_name].title
-    #del self.items[item_name]
+    # Apply HP or MP restores
+    if self.items[item_name].hp > 0:
+      self.players[player_name].heal(self.items[item_name].hp) 
     
-    return { 'type': 'message', 'message': "You use the %s." % item_title } 
+    if self.items[item_name].mp > 0:
+      self.players[player_name].restore(self.items[item_name].mp) 
     
+    del self.items[item_name]
+    
+    return self.player_inventory(player_name)
 
   def player_drop(self, player_name, item_name):
     
     # Skip if this item doesn't exist
     if not self.items.has_key(item_name):
-      return
+      return { 'type': 'message', 'message': 'You cannot drop that item.' }
     
     # Skip if this item isn't owned by player
     if self.items[item_name].player != player_name:
-      return
+      return { 'type': 'message', 'message': 'You cannot drop that item.' }
     
     # Skip if this item is already equipped
     if self.items[item_name].equipped:
-      return
+      return { 'type': 'message', 'message': 'You cannot drop that item.' }
   
     item_title = self.items[item_name].title
     del self.items[item_name]
-    
-    return { 'type': 'message', 'message': "You drop the %s." % item_title } 
-    
+
+    return self.player_inventory(player_name)
     
   def player_equip(self, player_name, item_name):
     
     # Skip if this item doesn't exist
     if not self.items.has_key(item_name):
-      return
+      return { 'type': 'message', 'message': 'You cannot equip that item.' }
     
     # Skip if this item cannot be equipped
     if self.items[item_name].slot == None:
-      return
+      return { 'type': 'message', 'message': 'You cannot equip that item.' }
     
     # Skip if this item is already equipped
     if self.items[item_name].equipped:
@@ -759,12 +768,12 @@ class Game:
    
     # Skip if this items isn't owned by player
     if self.items[item_name].player != player_name:
-      return
+      return { 'type': 'message', 'message': 'You cannot equip that item.' }
 
     # Is there something already in that slot
     slot = self.items[item_name].slot
     if [ i for i in self.items.values() if i.player == player_name and i.slot == slot and i.equipped ]:
-      return
+      return { 'type': 'message', 'message': 'You already have something equipped there.' }
 
     self.items[item_name].equipped = True
     gear_type = self.items[item_name].gear_type
@@ -777,25 +786,25 @@ class Game:
     elif slot == 'head':
       self.events.append({ 'type': 'setplayerhead', 'name': player_name, 'zone':  zone, 'head': gear_type,})
 
-    #self.events.append(self.player_stats(player_name))
+    return self.player_inventory(player_name)
     
   def player_unequip(self, player_name, item_name):
 
     # Skip if this item doesn't exist
     if not self.items.has_key(item_name):
-      return
+      return { 'type': 'message', 'message': 'You cannot unequip that item.' }
     
     # Skip if this item cannot be equipped
     if self.items[item_name].slot == 'none':
-      return
+      return { 'type': 'message', 'message': 'You cannot unequip that item.' }
     
     # Skip if this item is unequipped
     if not self.items[item_name].equipped:
-      return
+      return { 'type': 'message', 'message': 'You cannot unequip that item.' }
 
     # Skip if this items isn't owned by player
     if self.items[item_name].player != player_name:
-      return
+      return { 'type': 'message', 'message': 'You cannot unequip that item.' }
 
     self.items[item_name].equipped = False
     
@@ -809,7 +818,7 @@ class Game:
     elif slot == 'head':
       self.events.append({ 'type': 'setplayerhead', 'name': player_name, 'zone':  zone, 'head': 'none',})
     
-    #self.events.append(self.player_stats(player_name))
+    return self.player_inventory(player_name)
 
   def player_inventory(self, player_name):
     
@@ -885,7 +894,7 @@ class Game:
      
     for item_name,item in self.items.items():
       if item.equipped and item.player == player_name:
-        gear_arm = item.arm
+        gear_arm += item.arm
    
     for effect_name,effect in self.players[player_name].active_effects.items():
       effect_arm += effect['arm']
@@ -902,7 +911,7 @@ class Game:
     
     for item_name,item in self.items.items():
       if item.equipped and item.player == player_name:
-        gear_spi = item.spi
+        gear_spi += item.spi
     
     for effect_name,effect in self.players[player_name].active_effects.items():
       effect_spi += effect['spi']
@@ -920,8 +929,9 @@ class Game:
           attack_type = 'slash'
         elif item.gear_type == 'bow':
           attack_type = 'bow'
-        elif item.gear_type == 'spear':
+        elif item.gear_type in [ 'spear', 'staff' ]:
           attack_type = 'thrust'
+    
     return attack_type
   
   def get_player_attack_speed(self, player_name):

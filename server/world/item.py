@@ -25,13 +25,16 @@ class Item:
     self.dam       = Item.config.getint(name, 'dam')
     self.arm       = Item.config.getint(name, 'arm')
     self.spi       = Item.config.getint(name, 'spi')
+    self.hp        = Item.config.getint(name, 'hp')
+    self.mp        = Item.config.getint(name, 'mp')
     self.speed     = Item.config.getfloat(name, 'speed')
     self.icon      = Item.config.get(name,'icon')
     self.value     = Item.config.getint(name, 'value')
+    self.consumeable = Item.config.getboolean(name, 'consumeable')
 
     self.world.items[self.name] = self
 
   def state(self):
     
-    return { 'title': self.title, 'name': self.name, 'slot': self.slot, 'equipped': self.equipped, 'gear_type': self.gear_type, 'icon': self.icon, 'hit': self.hit, 'dam': self.dam, 'arm': self.arm, 'spi': self.spi, 'speed': self.speed, 'value': self.value }
+    return { 'title': self.title, 'name': self.name, 'slot': self.slot, 'equipped': self.equipped, 'gear_type': self.gear_type, 'icon': self.icon, 'hit': self.hit, 'dam': self.dam, 'arm': self.arm, 'spi': self.spi, 'speed': self.speed, 'value': self.value, 'hp': self.hp, 'mp': self.mp, 'consumeable': self.consumeable }
 

@@ -73,20 +73,24 @@ class Shop:
 
     inv = {}
     for name,item in self.inventory.items():
-      inv[name] = { 'title': item.title, 'slot': item.slot, 'hit': item.hit, 'dam': item.dam, 'arm': item.arm, 'spi': item.spi, 'value': item.value, 'gear_type': item.gear_type }
+      inv[name] = { 'title': item.title, 'slot': item.slot, 'hit': item.hit, 'dam': item.dam, 'arm': item.arm, 'spi': item.spi, 'value': item.value, 'gear_type': item.gear_type, 'icon': item.icon }
 
     return inv
 
   def sell(self, item_name, seller_name):
+
+    # Give player gold
+    self.world.players[buyer_name].gold += self.inventory[item_name].value / 2
     
     # remove sold object from game world
     del self.world.items[item_name]
 
-    # TODO: pay player for item
-
   def buy(self, item_name, buyer_name):
     
     # Add purchased item to game world
-    self.inventory[item_name].create(buyer_name, self.world)
+    if self.world.players[buyer_name].gold > self.inventory[item_name].value:
 
-    # TODO: deduct gold from player for purchase
+      self.world.players[buyer_name].gold -= self.inventory[item_name].value
+
+      self.inventory[item_name].create(buyer_name, self.world)
+
