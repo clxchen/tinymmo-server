@@ -77,31 +77,26 @@ class Ability:
     # can only buff or heal a player
     if target.__class__.__name__ == 'Player':
       if self.target_dam < 0 or self.damage > 0 or self.target_hit < 0 or self.target_arm < 0 or self.target_spi < 0:
-        print "Cant do that to a player"
-        return
+        return {'type': 'message', 'message': "You cannot cast %s on %s!" % (self.title, target.title) }
 
     # can only debuff or damage a monster
     if target.__class__.__name__ == 'Monster':
       if self.target_dam > 0 or self.heal > 0 or self.target_hit > 0 or self.target_arm > 0 or self.target_spi > 0:
-        print "Cant do that to a monster"
-        return
+        return {'type': 'message', 'message': "You cannot cast %s on %s!" % (self.title, target.title) }
     
     # can only debuff or damage an npc if it's a villan
     if target.__class__.__name__ == 'Npc':
       if not target.villan:
-        print "Cant do that to a friendly npc"
-        return
+        return {'type': 'message', 'message': "You cannot cast %s on %s!" % (self.title, target.title) }
       if self.target_dam > 0 or self.heal > 0 or self.target_hit > 0 or self.target_arm > 0 or self.target_spi > 0:
-        print "Cant do that to a villan npc"
-        return
+        return {'type': 'message', 'message': "You cannot cast %s on %s!" % (self.title, target.title) }
     
     # Do we have enough mana
     if actor.mp[0] < self.mana_cost:
-      return
+      return {'type': 'message', 'message': "Not enough mana to cast %s" % self.title }
    
     if self.name in actor.abilities_in_cooldown.keys():
-      log.msg("in cooldown")
-      return
+      return {'type': 'message', 'message': "You are not ready to cast %s" % self.title }
 
     reactor.callLater(self.cast_time, self.apply_effects, actor, target)
   

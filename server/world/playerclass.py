@@ -50,3 +50,4 @@ class PlayerClass:
     self.bow_bonus = bow_bonus
 
   
+    log.msg( "Loaded PLAYERCLASS %s" % self.name )

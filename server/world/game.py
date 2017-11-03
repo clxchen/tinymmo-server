@@ -252,10 +252,10 @@ class Game:
     items  = [ 'sword', 'chain_armor', 'chain_hood', 'bow', 'wand', 'spear' ]
     abilities = [ 'fire_lion', 'lightning_claw', 'ice_shield' ]
     quests = [ ]
-    dam    = 1
-    arm    = 1
-    hit    = 1
-    spi    = 1
+    dam    = 0
+    arm    = 0
+    hit    = 0
+    spi    = 0
     hp     = 10
     mp     = 10
     gold   = 0
@@ -642,7 +642,7 @@ class Game:
       return
 
     if self.abilities.has_key(ability):
-      self.abilities[ability].activate(self.players[player_name], self.players[player_name].target)
+      return self.abilities[ability].activate(self.players[player_name], self.players[player_name].target)
 
 
   def player_accept_quest(self, player_name, quest_name):

@@ -48,7 +48,7 @@ Fighter:
 - Straight up Melee Fighter
 - Wear any armor
 - Wield any weapon except wands
-- +2 DAM
+- +1 HIT
 - +1 HIT with swords and spears
 - +3 HP/level, +0 MP/level
 - No Spells
@@ -57,7 +57,7 @@ Mage:
 - Powerfull spell caster
 - Wear no armor
 - Wield staff or wand
-- +2 SPI
+- +1 SPI
 - +1 HIT with wands and staves
 - +1 HP/level, +2 MP/level
 - Spells
@@ -75,7 +75,7 @@ Cleric:
 - Healer, fighter
 - Wear cloth, leather or chain armor
 - Wield any weapon except wand
-- +1 SPI, +1 ARM
+- +1 ARM
 - +1 HIT with swords and spears
 - +2 HP/level, +1 MP/level
 - Spells
@@ -87,7 +87,7 @@ Ranger:
 - Ranged figher
 - Wear clother or leather armor
 - Wield any weapon except wand
-- +1 SPI, +1 DAM
+- +1 DAM
 - +2 HIT with bows
 - +2 HP/level, +1 MP/level
 - Spells:
