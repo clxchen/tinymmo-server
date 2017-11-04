@@ -3,19 +3,30 @@ Tinymmo-python is a very small, 'Minorly mulitplayer online role playing game'. 
 
 This game uses works from https://opengameart.org/.
 
-Requires python 2.7
+Server requires python 2.7
 
-Tested on Mac OSX 10+
+# Features:
 
+- kill monsters
+- explore world
+- find treasure
+- cast spells
+- wield weapons
+- with your friends
 
-## Setup using virtual environment:
+## Upcoming Features
+
+- Fight in groups
+- Complete quests
+
+# Setup using virtual environment:
 
 ```
 git clone https://github.com/dslice25/tinymmo-server.git
 cd tinymmo-server
 virtualenv pyenv
 source pyenv/bin/activate
-pip install twisted pytmx pyglet
+pip install twisted pytmx
 ```
 
 ### Quickstart:
