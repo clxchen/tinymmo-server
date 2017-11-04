@@ -247,9 +247,9 @@ class Game:
 
     return { "type": "events", "events": event_list }
 
-  def create_player(self, title, gender, hairstyle, haircolor):
+  def create_player(self, title, gender, hairstyle, haircolor, playerclass):
     
-    items  = [ 'sword', 'chain_armor', 'chain_hood', 'bow', 'wand', 'spear' ]
+    items  = self.playerclasses[playerclass].starting_items
     abilities = [ 'fire_lion', 'lightning_claw', 'ice_shield' ]
     quests = [ ]
     dam    = 0
@@ -261,7 +261,7 @@ class Game:
     gold   = 0
     name   = "player-%s" % self.player_index
     self.player_index += 1
-    new_player = Player(name, title, 1, 0, gender, 'light', hairstyle, haircolor, 'xxxx', self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, self)
+    new_player = Player(name, title, 1, playerclass, 0, gender, 'light', hairstyle, haircolor, 'xxxx', self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, self)
     new_player.online = True
     return new_player.name
 
@@ -638,12 +638,11 @@ class Game:
       self.player_attack(player_name)
       return
   
-    if ability not in self.players[player_name].abilities:
+    if ability not in self.playerclasses[self.players[player_name].playerclass].abilities:
       return
 
     if self.abilities.has_key(ability):
       return self.abilities[ability].activate(self.players[player_name], self.players[player_name].target)
-
 
   def player_accept_quest(self, player_name, quest_name):
  
@@ -837,9 +836,10 @@ class Game:
     # Player can alway attack
     abil = {}
     abil['attack'] = { 'name': 'attack', 'title': 'Attack', 'icon': 'sword', 'description': 'Engage in combat' }
-
-    for a in self.players[player_name].abilities:
-      abil[a] = self.abilities[a].stats()
+    
+    for a in self.playerclasses[self.players[player_name].playerclass].abilities:
+      if self.abilities[a].level <= self.players[player_name].level:
+        abil[a] = self.abilities[a].stats()
 
     return { 'type': 'abilities', 'abilities': abil }
 
@@ -853,6 +853,8 @@ class Game:
     Get total damage of player
     '''
     base_damage = self.players[player_name].dam
+    class_damage = self.playerclasses[self.players[player_name].playerclass].dam_bonus
+    
     gear_damage = 0
     effect_damage = 0
     
@@ -863,7 +865,7 @@ class Game:
     for effect_name,effect in self.players[player_name].active_effects.items():
       effect_damage += effect['dam']
 
-    return base_damage + gear_damage + effect_damage
+    return base_damage + gear_damage + effect_damage + class_damage
 
   
   def get_player_hit(self, player_name):
@@ -871,6 +873,8 @@ class Game:
     Get hit bonus for player
     '''
     base_hit = self.players[player_name].hit
+    class_hit = self.playerclasses[self.players[player_name].playerclass].hit_bonus
+   
     gear_hit = 0
     effect_hit = 0
 
@@ -881,7 +885,7 @@ class Game:
     for effect_name,effect in self.players[player_name].active_effects.items():
       effect_hit += effect['hit']
 
-    return base_hit + gear_hit + effect_hit
+    return base_hit + gear_hit + effect_hit + class_hit
 
 
   def get_player_arm(self, player_name):
@@ -889,6 +893,8 @@ class Game:
     Get armor class of player
     '''
     base_arm = self.players[player_name].arm
+    class_arm = self.playerclasses[self.players[player_name].playerclass].arm_bonus
+    
     gear_arm = 0
     effect_arm = 0
      
@@ -899,13 +905,15 @@ class Game:
     for effect_name,effect in self.players[player_name].active_effects.items():
       effect_arm += effect['arm']
 
-    return base_arm + gear_arm + effect_arm
+    return base_arm + gear_arm + effect_arm + class_arm
 
   def get_player_spi(self, player_name):
     '''
     Get spirit of player
     '''
     base_spi = self.players[player_name].spi
+    class_spi = self.playerclasses[self.players[player_name].playerclass].spi_bonus
+    
     gear_spi = 0
     effect_spi = 0
     
@@ -916,7 +924,7 @@ class Game:
     for effect_name,effect in self.players[player_name].active_effects.items():
       effect_spi += effect['spi']
 
-    return base_spi + gear_spi + effect_spi
+    return base_spi + gear_spi + effect_spi + class_spi
 
 
   def get_player_attack_type(self, player_name):

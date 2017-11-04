@@ -80,9 +80,9 @@ class Shop:
   def sell(self, item_name, seller_name):
 
     # Give player gold
-    self.world.players[buyer_name].gold += self.inventory[item_name].value / 2
+    self.world.players[seller_name].gold += self.world.items[item_name].value / 2
     
-    # remove sold object from game world
+    # remove sold object from game world. Cannot re-sell things.
     del self.world.items[item_name]
 
   def buy(self, item_name, buyer_name):

@@ -48,9 +48,10 @@ class Player:
 
   levels = [ 100, 200, 400, 800, 1600, 3200, 6400, 12800 ]
   
-  def __init__(self, name, title, level, exp, gender, body, hairstyle, haircolor, password, x, y, zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, world):
+  def __init__(self, name, title, level, playerclass, exp, gender, body, hairstyle, haircolor, password, x, y, zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, world):
 
     self.title = title
+    self.playerclass = playerclass
     self.name = name
     self.level = level
     self.exp = exp
@@ -221,25 +222,24 @@ class Player:
       return
 
     # Set player level
-    if self.exp >= (self.level**2 * 100):
+    if self.exp >= (self.level**2) * 100:
       self.level += 1
       self.world.events.append({ 'type': 'message', 'name': self.name, 'zone': self.zone, 'message': "%s has reached level %s" % (self.title, self.level)})
 
       # reward some stats
-      self.hp[1] += int(self.level * 1.5)
-      self.mp[1] += int(self.level * 1.5)
+      self.hp[1] += self.world.classes[self.playerclass].hp_rate
+      self.mp[1] += self.world.classes[self.playerclass].mp_rate
 
     if self.mode == 'wait':
-      # heal 5% per second while waiting
+      # heal 1 hp per second while waiting
       if self.hp[0] < self.hp[1]:
-        self.heal(self.hp[1]/20 + 1)
+        self.heal(1)
 
-      # restore 5% per second while waiting
+      # restore 1 mana per second while waiting
       if self.mp[0] < self.mp[1]:
-        self.restore(self.mp[1]/20 + 1)
+        self.restore(1)
 
   def update(self):
-    
 
     if self.hp[0] < 1:
       if self.mode != 'dead':

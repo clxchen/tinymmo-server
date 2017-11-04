@@ -69,11 +69,11 @@ class GameProtocol(basic.LineReceiver):
       if data:
 
         if data['action'] == 'createplayer':
-          gender = 'male'
-          hairstyle = 'plain'
-          haircolor = 'brown'
-          player_class = 'fighter'
-          self.player_name = self.factory.world.create_player(data['name'], gender, hairstyle, haircolor)
+          gender = data['gender'].lower()
+          hairstyle = data['hairstyle'].lower()
+          haircolor = data['haircolor'].lower()
+          playerclass = data['playerclass'].lower()
+          self.player_name = self.factory.world.create_player(data['name'], gender, hairstyle, haircolor, playerclass)
           self.transport.write(self.prepare({"type": "loginsucceeded"}))
           self.authenticated = True
           
