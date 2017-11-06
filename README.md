@@ -95,17 +95,13 @@ Cleric:
 * 10 Blessings of will (+1 to spi)
 * 12 Heal Severe Wounds (restore [level * 1d8] HP to target)
 
-
 Ranger:
 - Ranged figher
 - Wear clother or leather armor
 - Wield any weapon except wand
 - +1 DAM
-- +2 HIT with bows
-- +2 HP/level, +1 MP/level
-- Spells:
-* 4 Summon Bee (Summon bee to fight along side you [1d4 damage, 1 ARM/DAM/HIT/SPI])
-* 8 Summon Bat (Summon a bat to fight along side you [1d6 damage, 2 ARM/DAM/HIT/SPI])
-* 16 Summon Snake (Summon a snake to fight along side you [1d8 damage, 3 ARM/DAM/HIT/SPI])
+- +3 HIT with bows
+- +2 HP/level
+- No Spells
 
 
