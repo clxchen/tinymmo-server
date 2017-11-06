@@ -190,7 +190,7 @@ class Game:
 
     player = self.players[player_name]
     
-    stats = { "title": player.title, "hit": self.get_player_hit(player_name), "dam": self.get_player_dam(player_name), "arm": self.get_player_arm(player_name), "spi": self.get_player_spi(player_name), "hp": player.hp, "mp": player.mp, "gold": player.gold, "exp": player.exp, "level": player.level }
+    stats = { "title": player.title, "hit": self.get_player_hit(player_name), "dam": self.get_player_dam(player_name), "arm": self.get_player_arm(player_name), "spi": self.get_player_spi(player_name), "hp": player.hp, "mp": player.mp, "gold": player.gold, "exp": player.exp, "level": player.level, "playerclass": player.playerclass.title() }
   
     return { "type": "playerstats", "stats": stats }
 
@@ -261,7 +261,7 @@ class Game:
     gold   = 0
     name   = "player-%s" % self.player_index
     self.player_index += 1
-    new_player = Player(name, title, 1, playerclass, 0, gender, 'light', hairstyle, haircolor, 'xxxx', self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, self)
+    new_player = Player(name, title, 13, playerclass, 0, gender, 'light', hairstyle, haircolor, 'xxxx', self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, self)
     new_player.online = True
     return new_player.name
 

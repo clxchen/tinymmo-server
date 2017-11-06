@@ -78,9 +78,7 @@ Mage:
 * 6 Tornado ([level * 1d4] damage plus [level/2] DAM penalty to target for next minute)
 * 8 Earth Spikes ([level * 1d6] damage plus [level/2] ARM penalty to target at range for next minute)
 * 10 Ice Spikes ([level * 1d8] damage plus [level/2] HIT penalty to target at range for next minute)
-* 12 Water Tentacle ([level * 1d4] damage multiple targets)
-* 14 Ice Tentacle ([level * 1d6] damage multiple targets)
-* 16 Lightning Claw ([level * 1d8] damage multiple targets)
+* 12 Lightning Claw ([level * 1d10] damage)
 
 Cleric:
 - Healer, fighter
@@ -90,9 +88,13 @@ Cleric:
 - +1 HIT with swords and spears
 - +2 HP/level, +1 MP/level
 - Spells
-* 2 Heal Wounds (restore [level * 1d4] HP to target)
-* 4 Turn Undead ([level * 1d4] damage to undead creatures)
-* 8 Heal Allies (restore [level * 1d4] HP to nearby allies)
+* 2 Heal Light Wounds (restore [level * 1d4] HP to target)
+* 4 Blessings of strength (+1 to dam)
+* 6 Blessings of speed (+1 to hit)
+* 8 Blessings of resistence (+1 arm)
+* 10 Blessings of will (+1 to spi)
+* 12 Heal Severe Wounds (restore [level * 1d8] HP to target)
+
 
 Ranger:
 - Ranged figher
