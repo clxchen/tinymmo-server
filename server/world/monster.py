@@ -1,5 +1,6 @@
 import time
 import random
+import uuid
 import ConfigParser
 from twisted.internet import task, reactor
 
@@ -16,7 +17,8 @@ class Monster:
 
   def __init__(self, name, x, y, zone, world, spawn):
     
-    self.name   = "%s-%s" % (name, self.getid())
+    #self.name   = "%s-%s" % (name, self.getid())
+    self.name   = str(uuid.uuid4())
     self.world  = world
     self.x      = x
     self.y      = y

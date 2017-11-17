@@ -1,4 +1,5 @@
 import time
+import uuid
 import random
 import ConfigParser
 from twisted.internet import task, reactor
@@ -16,7 +17,8 @@ class Npc:
 
   def __init__(self, name, x, y, zone, world, spawn):
 
-    self.name  = "%s-%s" % (name, self.getid())
+    #self.name  = "%s-%s" % (name, self.getid())
+    self.name  = str(uuid.uuid4())
     self.x     = x
     self.y     = y
     self.zone  = zone

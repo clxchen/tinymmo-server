@@ -1,4 +1,5 @@
 import ConfigParser
+import uuid
 
 class Item:
 
@@ -13,7 +14,8 @@ class Item:
 
   def __init__(self, name, player, container, equipped, world):
 
-    self.name      = "%s-%s" % (name, self.getid())
+    #self.name      = "%s-%s" % (name, self.getid())
+    self.name      = str(uuid.uuid4())
     self.player    = player
     self.container = container
     self.equipped  = equipped

@@ -48,7 +48,7 @@ class Player:
 
   levels = [ 100, 200, 400, 800, 1600, 3200, 6400, 12800 ]
   
-  def __init__(self, name, title, level, playerclass, exp, gender, body, hairstyle, haircolor, password, x, y, zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, world):
+  def __init__(self, name, title, level, playerclass, exp, gender, body, hairstyle, haircolor, password, x, y, zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, account, world):
 
     self.title = title
     self.playerclass = playerclass
@@ -73,6 +73,7 @@ class Player:
     self.dam = dam
     self.arm = arm
     self.spi = spi
+    self.account = account
     self.gold = 0
     self.mode = 'wait' # wait, running, fighting, casting, dead
     self.direction = 'south'

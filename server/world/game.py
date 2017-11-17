@@ -2,6 +2,7 @@ import time
 import os,ConfigParser
 import random
 import math
+import uuid
 
 from twisted.internet import reactor, task
 from twisted.python import log
@@ -16,6 +17,7 @@ from quest import Quest,load_quests
 from loot import Loot,load_loot
 from ability import Ability, load_abilities
 from playerclass import PlayerClass, load_playerclasses
+from accounts import Account, load_accounts
 
 class Game:
 
@@ -44,7 +46,7 @@ class Game:
 
     # Players table
     self.players = {}
-    self.player_index = 0
+    #self.player_index = 0
 
     #load_players(self, self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone)
 
@@ -81,6 +83,10 @@ class Game:
     # Player classes table
     self.playerclasses = {}
     load_playerclasses(self)
+
+    # Accounts Table
+    self.accounts = {}
+    load_accounts(self)
 
     # Track buffs/debuffs
     self.active_effects = {}
@@ -247,10 +253,10 @@ class Game:
 
     return { "type": "events", "events": event_list }
 
-  def create_player(self, title, gender, hairstyle, haircolor, playerclass):
+  def create_player(self, title, gender, hairstyle, haircolor, playerclass, account):
     
     items  = self.playerclasses[playerclass].starting_items
-    abilities = [ 'fire_lion', 'lightning_claw', 'ice_shield' ]
+    abilities = [ ]
     quests = [ ]
     dam    = 0
     arm    = 0
@@ -259,10 +265,13 @@ class Game:
     hp     = 10
     mp     = 10
     gold   = 0
-    name   = "player-%s" % self.player_index
-    self.player_index += 1
-    new_player = Player(name, title, 13, playerclass, 0, gender, 'light', hairstyle, haircolor, 'xxxx', self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, self)
+    #name   = "player-%s" % self.player_index
+    name   = str(uuid.uuid4())
+    #name   = "player-%s" % str(uuid.uuid4())[:16]
+    #self.player_index += 1
+    new_player = Player(name, title, 1, playerclass, 0, gender, 'light', hairstyle, haircolor, 'xxxx', self.player_spawn_x, self.player_spawn_y, self.player_spawn_zone, items, abilities, quests, hp, mp, hit, dam, arm, spi, account, self)
     new_player.online = True
+    
     return new_player.name
 
   def player_join(self, player_name):
@@ -339,7 +348,8 @@ class Game:
     npc.target.exp += ( npc.level / npc.target.level ) * ( 10 * npc.level )
 
     # create container object holding npc treasure
-    container_name = "container-%s" % self.container_index 
+    #container_name = "container-%s" % self.container_index 
+    container_name = str(uuid.uuid4())
     self.container_index += 1
     title = "Remains of %s" % npc.title
     x = npc.x
@@ -546,9 +556,9 @@ class Game:
     self.players[player_name].mode = 'wait'
 
     # Delete all items owned by player
-    self.items = { k: v for k,v in self.items.items() if v.player != player_name }
+    #self.items = { k: v for k,v in self.items.items() if v.player != player_name }
     
-    del(self.players[player_name])
+    #del(self.players[player_name])
     
   def walk(self, player_name, direction):
     '''
@@ -926,7 +936,30 @@ class Game:
 
     return base_spi + gear_spi + effect_spi + class_spi
 
+  def get_monster_spi(self, monster_name):
+    '''
+    Get monster spirit after effects
+    '''
+    base_spi = self.monsters[monster_name].spi
+    effect_spi = 0
 
+    for effect_name,effect in self.monsters[monster_name].active_effects.items():
+      effect_spi += effect['spi']
+
+    return base_spi + effect_spi
+    
+  def get_npc_spi(self, npc_name):
+    '''
+    Get npc spirit after effects
+    '''
+    base_spi = self.npcs[npc_name].spi
+    effect_spi = 0
+
+    for effect_name,effect in self.npcs[npc_name].active_effects.items():
+      effect_spi += effect['spi']
+
+    return base_spi + effect_spi
+    
   def get_player_attack_type(self, player_name):
     
     attack_type = 'slash'
