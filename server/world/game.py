@@ -40,9 +40,9 @@ class Game:
     self.items = {}
 
     # Player spawn location
-    self.player_spawn_x = 7
-    self.player_spawn_y = 7
-    self.player_spawn_zone = 'start2'
+    self.player_spawn_x = 18
+    self.player_spawn_y = 95
+    self.player_spawn_zone = 'overworld'
 
     # Players table
     self.players = {}
