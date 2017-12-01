@@ -60,9 +60,6 @@ class Ability:
 
   def activate(self, actor, target):
     
-    # Start cast animation
-    self.world.events.append({'type': 'playercast', 'name': actor.name, 'cast_time': self.cast_time, 'zone': actor.zone })
-    
     # Stop if we don't have enough mp
     if not self.mana_cost < actor.mp[0]:
       return
@@ -113,8 +110,11 @@ class Ability:
     
     if roll_to_hit:
       if roll > spi_defence:
+        self.world.events.append({'type': 'playercast', 'name': actor.name, 'cast_time': self.cast_time, 'zone': actor.zone, 'hit': True })
         reactor.callLater(self.cast_time, self.apply_effects, actor, target)
+      
       else:
+        self.world.events.append({'type': 'playercast', 'name': actor.name, 'cast_time': self.cast_time, 'zone': actor.zone, 'hit': False })
         return { 'type': 'message', 'message': "Casting of %s failed. Rolled %s; needed > %s." % (self.title, roll, spi_defence) }
 
   def apply_effects(self, actor, target):

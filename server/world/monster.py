@@ -148,7 +148,7 @@ class Monster:
         self.path = []
      
       if self.ready_to_attack:
-        self.attack() 
+        self.world.attack(self,self.target) 
     
     elif self.mode == 'chase':
       # Move toward target
@@ -214,12 +214,12 @@ class Monster:
   def attack(self):
     self.ready_to_attack = False
     
-    tohit  = random.randint(1,20) + self.hit
+    tohit  = random.randint(1,20) + self.world.get_monster_hit(self.name)
     damage = random.randint(1, self.dam + 1)
 
     player_arm = self.world.get_player_arm(self.target.name)
 
-    if tohit > player_arm:
+    if tohit > player_arm + 10:
       # It's a hit
       self.world.events.append({'type': 'monsterattack', 'name': self.name, 'dam': damage, 'target': self.target.name, 'zone': self.zone, 'title': self.title, 'target_title': self.target.title })
       self.target.take_damage(self,damage)

@@ -181,7 +181,7 @@ class Npc:
         self.path = []
      
       if self.ready_to_attack:
-        self.attack()
+        self.world.attack(self,self.target)
       
     elif self.mode == 'dead':
       pass
@@ -256,7 +256,7 @@ class Npc:
     else:
       arm = self.target.arm
 
-    if tohit >= arm:
+    if tohit >= arm + 10:
       # It's a hit
       self.world.events.append({'type': 'npc'+self.attack_type, 'name': self.name, 'dam': damage, 'target': self.target.name, 'zone': self.zone, 'title': self.title, 'target_title': self.target.title })
       self.target.take_damage(self,damage)

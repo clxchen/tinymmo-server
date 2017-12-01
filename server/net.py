@@ -21,8 +21,11 @@ class GameProtocol(basic.LineReceiver):
 
     def connectionLost(self, reason):
       log.msg( "Connection lost" )
-      self.factory.world.accounts[self.username].online = False
       self.authenticated = False
+      
+      if self.username:
+        self.factory.world.accounts[self.username].online = False
+      
       if self.player_name: 
         self.factory.world.player_leave(self.player_name)
         self.events_task.stop()

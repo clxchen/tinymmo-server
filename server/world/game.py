@@ -41,7 +41,7 @@ class Game:
 
     # Player spawn location
     self.player_spawn_x = 18
-    self.player_spawn_y = 95
+    self.player_spawn_y = 90
     self.player_spawn_zone = 'overworld'
 
     # Players table
@@ -311,19 +311,19 @@ class Game:
     create_container = False
     # 50% chance of common 
     for i in self.loot[monster.loot].items_common:
-      if random.random() < 1.0:
+      if random.random() < .50:
         create_container = True
         item = Item(i, None, container_name, False, self)
    
     # 10% chance of uncommon
     for i in self.loot[monster.loot].items_uncommon:
-      if random.random() < 1.0:
+      if random.random() < .10:
         create_container = True
         item = Item(i, None, container_name, False, self)
     
     # 5% chance of rare
     for i in self.loot[monster.loot].items_rare:
-      if random.random() < 1.0:
+      if random.random() < .05:
         create_container = True
         item = Item(i, None, container_name, False, self)
     
@@ -948,6 +948,42 @@ class Game:
 
     return base_spi + effect_spi
     
+  def get_monster_dam(self, monster_name):
+    '''
+    Get monster damrit after effects
+    '''
+    base_dam = self.monsters[monster_name].dam
+    effect_dam = 0
+
+    for effect_name,effect in self.monsters[monster_name].active_effects.items():
+      effect_dam += effect['dam']
+
+    return base_dam + effect_dam
+    
+  def get_monster_arm(self, monster_name):
+    '''
+    Get monster armrit after effects
+    '''
+    base_arm = self.monsters[monster_name].arm
+    effect_arm = 0
+
+    for effect_name,effect in self.monsters[monster_name].active_effects.items():
+      effect_arm += effect['arm']
+
+    return base_arm + effect_arm
+    
+  def get_monster_hit(self, monster_name):
+    '''
+    Get monster hitrit after effects
+    '''
+    base_hit = self.monsters[monster_name].hit
+    effect_hit = 0
+
+    for effect_name,effect in self.monsters[monster_name].active_effects.items():
+      effect_hit += effect['hit']
+
+    return base_hit + effect_hit
+    
   def get_npc_spi(self, npc_name):
     '''
     Get npc spirit after effects
@@ -959,6 +995,42 @@ class Game:
       effect_spi += effect['spi']
 
     return base_spi + effect_spi
+    
+  def get_npc_arm(self, npc_name):
+    '''
+    Get npc spirit after effects
+    '''
+    base_arm = self.npcs[npc_name].arm
+    effect_arm = 0
+
+    for effect_name,effect in self.npcs[npc_name].active_effects.items():
+      effect_arm += effect['arm']
+
+    return base_arm + effect_arm
+    
+  def get_npc_dam(self, npc_name):
+    '''
+    Get npc spirit after effects
+    '''
+    base_dam = self.npcs[npc_name].dam
+    effect_dam = 0
+
+    for effect_name,effect in self.npcs[npc_name].active_effects.items():
+      effect_dam += effect['dam']
+
+    return base_dam + effect_dam
+    
+  def get_npc_hit(self, npc_name):
+    '''
+    Get npc spirit after effects
+    '''
+    base_hit = self.npcs[npc_name].hit
+    effect_hit = 0
+
+    for effect_name,effect in self.npcs[npc_name].active_effects.items():
+      effect_hit += effect['hit']
+
+    return base_hit + effect_hit
     
   def get_player_attack_type(self, player_name):
     
@@ -1023,6 +1095,61 @@ class Game:
 
     return False
 
+  def attack(self, attacker, target):
+    
+    attacker.ready_to_attack = False
+    
+    hitroll  = 0
+    damage = 0
+    attack_type = 'attack'
+    armor = 0
+    attack_speed = 0
+
+    # Gather attacker stats 
+    if attacker.__class__.__name__ == 'Player':
+      hitroll = random.randint(1,20) + self.get_player_hit(attacker.name)
+      damage = random.randint(1, self.get_player_dam(attacker.name) + 1)
+      attack_type = 'player'+self.get_player_attack_type(attacker.name)
+      attack_speed = self.get_player_attack_speed(attacker.name)
+    
+    elif attacker.__class__.__name__ == 'Monster':
+      hitroll  = random.randint(1,20) + self.get_monster_hit(attacker.name)
+      damage = random.randint(1, self.get_monster_dam(attacker.name) + 1)
+      attack_type = 'monsterattack'
+      attack_speed = attacker.attack_speed
+    
+    elif attacker.__class__.__name__ == 'Npc':
+      hitroll  = random.randint(1,20) + self.get_npc_hit(attacker.name)
+      damage = random.randint(1, self.get_npc_dam(attacker.name) + 1)
+      attack_type = 'npc'+attacker.attack_type
+      attack_speed = attacker.attack_speed
+    
+    # Gather Target stats 
+    if target.__class__.__name__ == 'Npc':
+      armor = self.get_npc_arm(target.name)
+    elif target.__class__.__name__ == 'Monster':
+      armor = self.get_monster_arm(target.name)
+    elif target.__class__.__name__ == 'Player':
+      armor = self.get_player_arm(target.name)
+    
+    print "====%s vs %s====" % (attacker.__class__.__name__,target.__class__.__name__) 
+    print "%s attacks %s with %s:" % (attacker.title,target.title,attack_type)
+    print " %s rolls %s" % (attacker.title,hitroll)
+    print " %s armor is %s" % (target.title, armor + 10)
+    
+    if hitroll >= armor + 10:
+      print " %s >= %s, it's a hit!" % (hitroll, armor + 10)
+      print " %s takes %s damage" % (target.title,damage)
+      
+      self.events.append({'type': attack_type, 'hit': True, 'name': attacker.name, 'target': target.name, 'zone': attacker.zone })
+      target.take_damage(attacker, damage)
+
+    else:
+      print " %s < %s, it's a miss!" % (hitroll, armor + 10)
+      
+      self.events.append({'type': attack_type, 'hit': False, 'name': attacker.name, 'target': target.name, 'zone': attacker.zone,})
+    
+    reactor.callLater(attack_speed, attacker.reset_attack)
 
   def loop(self):
     

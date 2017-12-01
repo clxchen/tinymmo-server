@@ -228,8 +228,8 @@ class Player:
       self.world.events.append({ 'type': 'message', 'name': self.name, 'zone': self.zone, 'message': "%s has reached level %s" % (self.title, self.level)})
 
       # reward some stats
-      self.hp[1] += self.world.classes[self.playerclass].hp_rate
-      self.mp[1] += self.world.classes[self.playerclass].mp_rate
+      self.hp[1] += self.world.playerclasses[self.playerclass].hp_rate
+      self.mp[1] += self.world.playerclasses[self.playerclass].mp_rate
 
     if self.mode == 'wait':
       # heal 1 hp per second while waiting
@@ -312,7 +312,7 @@ class Player:
         return
       
       if self.ready_to_attack:
-        self.attack()
+        self.world.attack(self, self.target)
         
     elif self.mode == 'casting':
       pass
@@ -327,8 +327,15 @@ class Player:
     tohit  = random.randint(1,20) + self.world.get_player_hit(self.name)
     damage = random.randint(1, self.world.get_player_dam(self.name))
     attack = self.world.get_player_attack_type(self.name)
+    
+    armor = 0
+    if self.target.__class__.__name__ == 'Npc':
+      armor = self.world.get_npc_arm(self.target.name)
 
-    if tohit >= self.target.arm:
+    elif self.target.__class__.__name__ == 'Monster':
+      armor = self.world.get_monster_arm(self.target.name)
+
+    if tohit >= armor + 10:
       # It's a hit
       self.world.events.append({'type': 'player'+attack, 'name': self.name, 'dam': damage, 'target': self.target.name, 'zone': self.zone, 'target_title': self.target.title })
       self.target.take_damage(self,damage)
