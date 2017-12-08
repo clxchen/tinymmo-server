@@ -306,33 +306,29 @@ class Game:
     zone = monster.zone
 
     # award random amount of gold 
-    #monster.target.gold += random.randint(self.loot[monster.loot].gold_min, self.loot[monster.loot].gold_max)
+    gold = random.randint(self.loot[monster.loot].gold_min, self.loot[monster.loot].gold_max)
     
     create_container = False
     # 50% chance of common 
     for i in self.loot[monster.loot].items_common:
       if random.random() < .50:
-        create_container = True
         item = Item(i, None, container_name, False, self)
    
     # 10% chance of uncommon
     for i in self.loot[monster.loot].items_uncommon:
       if random.random() < .10:
-        create_container = True
         item = Item(i, None, container_name, False, self)
     
     # 5% chance of rare
     for i in self.loot[monster.loot].items_rare:
       if random.random() < .05:
-        create_container = True
         item = Item(i, None, container_name, False, self)
     
-    if create_container:
-      self.containers[container_name] = Container(title, container_name, x, y, zone, monster.target.name)
-      self.events.append({'type': 'addcontainer', 'name': container_name, 'title': title, 'x': x, 'y': y, 'zone': zone })
+    self.containers[container_name] = Container(title, container_name, x, y, zone, gold, monster.target.name)
+    self.events.append({'type': 'addcontainer', 'name': container_name, 'title': title, 'x': x, 'y': y, 'zone': zone })
     
-      # clean up container after 60 sec
-      reactor.callLater(60.0, self.cleanup_container, container_name)
+    # clean up container after 60 sec
+    reactor.callLater(60.0, self.cleanup_container, container_name)
     
     # Really delete monster
     monster.spawn.spawn_count -= 1
@@ -342,7 +338,6 @@ class Game:
   def cleanup_npc(self, npc):
     # drop npc
     self.events.append({'type': 'dropnpc', 'name': npc.name, 'title': npc.title, 'zone': npc.zone })
-
 
     # award exp to killer
     npc.target.exp += ( npc.level / npc.target.level ) * ( 10 * npc.level )
@@ -357,30 +352,26 @@ class Game:
     zone = npc.zone
 
     # award random amount of gold 
-    #npc.target.gold += random.randint(self.loot[npc.loot].gold_min, self.loot[npc.loot].gold_max)
+    gold += random.randint(self.loot[npc.loot].gold_min, self.loot[npc.loot].gold_max)
     
     create_container = False
     # 50% chance of common 
     for i in self.loot[npc.loot].items_common:
       if random.random() < 0.5:
-        create_container = True
         item = Item(i, None, container_name, False, self)
    
     # 10% chance of uncommon
     for i in self.loot[npc.loot].items_uncommon:
       if random.random() < 0.1:
-        create_container = True
         item = Item(i, None, container_name, False, self)
     
     # 5% chance of rare
     for i in self.loot[npc.loot].items_rare:
       if random.random() < 0.05:
-        create_container = True
         item = Item(i, None, container_name, False, self)
 
-    if create_container:
-      self.containers[container_name] = Container(title, container_name, x, y, zone, npc.target.name)
-      self.events.append({'type': 'addcontainer', 'name': container_name, 'title': title, 'x': x, 'y': y, 'zone': zone, 'source': source, 'source_w': 32, 'source_h': 32, 'source_x': 0, 'source_y': 0})
+    self.containers[container_name] = Container(title, container_name, x, y, zone, npc.target.name)
+    self.events.append({'type': 'addcontainer', 'name': container_name, 'title': title, 'x': x, 'y': y, 'zone': zone, 'source': source, 'source_w': 32, 'source_h': 32, 'source_x': 0, 'source_y': 0})
     
     # clean up container after 60 sec
     reactor.callLater(60.0, self.cleanup_container, container_name)
@@ -406,9 +397,31 @@ class Game:
       if v.container == name and v.player == None:
         inv[k] = v.state()
     
+    # Add special 'gold' item
+    if self.containers[name].gold > 0:
+      gold_name = "%s-gold" % name
+      inv[gold_name] = { 'title': "%s Gold" % self.containers[name].gold, 
+                         'name': gold_name, 
+                         'icon': 'coin', 
+                         'hit': 0, 
+                         'dam': 0, 
+                         'arm': 0, 
+                         'spi': 0, 
+                         'speed': 0, 
+                         'value': self.containers[name].gold, 
+                         'hp': 0, 
+                         'mp': 0, 
+                         'consumeable': False }
+
+
     return { 'type': 'containerinventory', 'name': name, 'title': self.containers[name].title, 'inventory': inv }
 
   def take_container_item(self, container_name, item_name, player_name):
+
+    # player is taking gold
+    if item_name == "%s-gold" % container_name:
+      self.players[player_name].gold += self.containers[container_name].gold
+      self.containers[container_name].gold = 0
 
     if self.items.has_key(item_name):
       if self.items[item_name].container == container_name:
@@ -1038,11 +1051,11 @@ class Game:
     
     for item_name,item in self.items.items():
       if item.equipped and item.slot == 'weapon' and item.player == player_name:
-        if item.gear_type in [ 'sword', 'wand' ]:
+        if item.gear_type in [ 'sword', 'wand', 'dagger', 'sword', 'rapier', 'saber', 'mace' ]:
           attack_type = 'slash'
-        elif item.gear_type == 'bow':
+        elif item.gear_type in [ 'bow', 'greatbow', 'recurvebow' ]:
           attack_type = 'bow'
-        elif item.gear_type in [ 'spear', 'staff' ]:
+        elif item.gear_type in [ 'staff', 'spear', 'trident' ]:
           attack_type = 'thrust'
     
     return attack_type
@@ -1095,6 +1108,27 @@ class Game:
 
     return False
 
+  def facetarget(self, attacker, target):
+    
+    new_dir = 'south'
+
+    if target.x > attacker.x:
+      new_dir = 'east'
+    elif target.x < attacker.x:
+      new_dir = 'west'
+    elif target.y > attacker.y:
+      new_dir = 'north'
+    
+    if attacker.__class__.__name__ == 'Player':
+      self.players[attacker.name].direction = new_dir
+      self.events.append({'type': "playerface", 'direction': new_dir, 'zone': attacker.zone, 'name': attacker.name })
+    elif attacker.__class__.__name__ == 'Monster':
+      self.monsters[attacker.name].direction = new_dir
+      self.events.append({'type': "monsterface", 'direction': new_dir, 'zone': attacker.zone, 'name': attacker.name })
+    elif attacker.__class__.__name__ == 'Npc':
+      self.npcs[attacker.name].direction = new_dir
+      self.events.append({'type': "npcface", 'direction': new_dir, 'zone': attacker.zone, 'name': attacker.name })
+
   def attack(self, attacker, target):
     
     attacker.ready_to_attack = False
@@ -1105,13 +1139,15 @@ class Game:
     armor = 0
     attack_speed = 0
 
+    self.facetarget(attacker,target)
+
     # Gather attacker stats 
     if attacker.__class__.__name__ == 'Player':
       hitroll = random.randint(1,20) + self.get_player_hit(attacker.name)
       damage = random.randint(1, self.get_player_dam(attacker.name) + 1)
       attack_type = 'player'+self.get_player_attack_type(attacker.name)
       attack_speed = self.get_player_attack_speed(attacker.name)
-    
+      
     elif attacker.__class__.__name__ == 'Monster':
       hitroll  = random.randint(1,20) + self.get_monster_hit(attacker.name)
       damage = random.randint(1, self.get_monster_dam(attacker.name) + 1)
@@ -1132,14 +1168,14 @@ class Game:
     elif target.__class__.__name__ == 'Player':
       armor = self.get_player_arm(target.name)
     
-    print "====%s vs %s====" % (attacker.__class__.__name__,target.__class__.__name__) 
-    print "%s attacks %s with %s:" % (attacker.title,target.title,attack_type)
-    print " %s rolls %s" % (attacker.title,hitroll)
-    print " %s armor is %s" % (target.title, armor + 10)
+    #print "====%s vs %s====" % (attacker.__class__.__name__,target.__class__.__name__) 
+    #print "%s attacks %s with %s:" % (attacker.title,target.title,attack_type)
+    #print " %s rolls %s" % (attacker.title,hitroll)
+    #print " %s armor is %s" % (target.title, armor + 10)
     
     if hitroll >= armor + 10:
-      print " %s >= %s, it's a hit!" % (hitroll, armor + 10)
-      print " %s takes %s damage" % (target.title,damage)
+      #print " %s >= %s, it's a hit!" % (hitroll, armor + 10)
+      #print " %s takes %s damage" % (target.title,damage)
       
       self.events.append({'type': attack_type, 'hit': True, 'name': attacker.name, 'target': target.name, 'zone': attacker.zone })
       target.take_damage(attacker, damage)

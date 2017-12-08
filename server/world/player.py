@@ -84,6 +84,9 @@ class Player:
     self.haircolor = haircolor
     self.body = body
 
+    # sounds info
+    self.sounds = 'player'
+
     # Schedule update task
     self.update_task = task.LoopingCall(self.update)
     self.update_task.start(1.0)
@@ -139,7 +142,8 @@ class Player:
              'weapon': weapon, 
              'x': self.x, 
              'y': self.y, 
-             'zone': self.zone, }
+             'zone': self.zone,
+             'sounds': self.sounds }
 
   def take_damage(self, attacker, damage):
 

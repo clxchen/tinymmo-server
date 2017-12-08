@@ -35,10 +35,13 @@ class Monster:
     self.spi    = Monster.config.getint(name, 'spi')
     self.mode   = Monster.config.get(name, 'mode')
     self.loot   = Monster.config.get(name, 'loot')
+    
+    self.sounds = 'monster'
+
     self.attack_speed  = Monster.config.getfloat(name, 'speed')
 
     self.target = None
-
+    
     self.ready_to_attack = True
     
     self.active_effects = {}
@@ -58,14 +61,15 @@ class Monster:
                                'name':   self.name, 
                                'x':      self.x, 
                                'y':      self.y, 
-                               'zone':   self.zone })
+                               'zone':   self.zone,
+                               'sounds': self.sounds, })
 
   def unload(self):
     self.update_task.stop()
 
   def state(self):
 
-    return { 'title': self.title, 'source': self.source, 'name': self.name, 'x': self.x, 'y': self.y, 'zone': self.zone, }
+    return { 'title': self.title, 'source': self.source, 'name': self.name, 'x': self.x, 'y': self.y, 'zone': self.zone, 'sounds': self.sounds }
 
   def take_damage(self, attacker, damage):
 

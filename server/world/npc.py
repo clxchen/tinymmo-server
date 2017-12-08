@@ -46,6 +46,8 @@ class Npc:
     self.villan    = Npc.config.getboolean(name, 'villan')
     self.loot      = Npc.config.get(name, 'loot')
     self.attack_speed = Npc.config.getfloat(name, 'speed')
+    
+    self.sounds = 'npc'
       
     self.attack_type = 'slash'
     self.target      = None 
@@ -70,7 +72,7 @@ class Npc:
     
     self.world.npcs[self.name] = self
       
-    self.world.events.append({ 'type': 'addnpc', 'gender': self.gender, 'body': self.body, 'hairstyle': self.hairstyle, 'haircolor': self.haircolor, 'armor': self.armor, 'head': self.head, 'weapon': self.weapon, 'title': self.title, 'name': self.name, 'x': self.x, 'y': self.y, 'zone': self.zone, 'villan': self.villan, 'quest': self.quest, 'shop': self.shop })
+    self.world.events.append({ 'type': 'addnpc', 'gender': self.gender, 'body': self.body, 'hairstyle': self.hairstyle, 'haircolor': self.haircolor, 'armor': self.armor, 'head': self.head, 'weapon': self.weapon, 'title': self.title, 'name': self.name, 'x': self.x, 'y': self.y, 'zone': self.zone, 'villan': self.villan, 'quest': self.quest, 'shop': self.shop, 'sounds': self.sounds })
 
   def unload(self):
     self.update_task.stop()
@@ -91,7 +93,8 @@ class Npc:
              'zone': self.zone,
              'villan': self.villan,
              'quest': self.quest,
-             'shop': self.shop, }
+             'shop': self.shop,
+             'sounds': self.sounds, }
   
   def take_damage(self, attacker, damage):
 
